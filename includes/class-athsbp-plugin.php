@@ -1348,7 +1348,9 @@ class ATHSBP_Plugin {
 			$filtered[] = $group;
 		}
 
-		update_option( self::FILTER_GROUPS_KEY, $filtered );
+		if ( $filtered !== $groups ) {
+			update_option( self::FILTER_GROUPS_KEY, $filtered );
+		}
 	}
 
 	private function sync_predefined_terms() {

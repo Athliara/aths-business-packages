@@ -2,9 +2,9 @@
 Contributors: athlios
 Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 0.2.12
+Stable tag: 0.2.13
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -66,6 +66,12 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+
+= 0.2.13 =
+
+* Avoided unnecessary custom filter option writes during admin requests to improve package update performance.
+* Marked the plugin as tested up to WordPress 7.0.
 
 = 0.2.12 =
 
