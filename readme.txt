@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 0.2.13
+Stable tag: 0.2.14
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -67,6 +67,13 @@ This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
 
+
+
+= 0.2.14 =
+
+* Refined package card typography, badges, type chips, and subtitles for a tighter visual layout.
+* Adjusted single package title sizing for 1080p and 2K screens.
+* Limited related package suggestions to three items.
 
 = 0.2.13 =
 

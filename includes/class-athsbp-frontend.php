@@ -770,14 +770,14 @@ class ATHSBP_Frontend {
 			}
 		}
 
-		if ( count( $related_ids ) < 4 ) {
+		if ( count( $related_ids ) < 3 ) {
 			$related_ids = array_merge(
 				$related_ids,
-				$this->get_fallback_related_package_ids( $post_id, $related_ids, 4 - count( $related_ids ) )
+				$this->get_fallback_related_package_ids( $post_id, $related_ids, 3 - count( $related_ids ) )
 			);
 		}
 
-		$related_ids = array_slice( array_values( array_unique( array_map( 'intval', $related_ids ) ) ), 0, 4 );
+		$related_ids = array_slice( array_values( array_unique( array_map( 'intval', $related_ids ) ) ), 0, 3 );
 
 		if ( empty( $related_ids ) ) {
 			return;
