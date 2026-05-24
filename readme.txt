@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 0.2.14
+Stable tag: 0.2.15
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -68,6 +68,12 @@ This plugin is distributed under the GNU General Public License v3 or later.
 == Changelog ==
 
 
+
+
+= 0.2.15 =
+
+* Removed hidden release dotfiles from the WordPress.org package.
+* Rebuilt the release package for WordPress.org update delivery.
 
 = 0.2.14 =
 

@@ -2,7 +2,7 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.2.14`
+Current version: `0.2.15`
 
 ## What this version includes
 
@@ -46,7 +46,7 @@ Current version: `0.2.14`
 
 - Main plugin header includes plugin name, description, version, WordPress requirement, PHP requirement, author, license, text domain, and domain path.
 - `readme.txt` follows the WordPress.org readme structure and includes requirements, stable tag, license, installation, FAQ, and changelog sections.
-- Stable tag and main plugin version are aligned at `0.2.14`.
+- Stable tag and main plugin version are aligned at `0.2.15`.
 - Author/developer is `Athlios`.
 - Contributor username is listed as `athlios`.
 - License is `GPL-3.0-or-later` with the GNU GPL v3 license URI.
@@ -68,6 +68,11 @@ Current version: `0.2.14`
 - License: `GNU General Public License v3 or later`
 
 
+
+## 0.2.15 WordPress.org Package Cleanup
+
+- Removed hidden release dotfiles from the WordPress.org package.
+- Rebuilt the release package for clean WordPress.org update delivery.
 ## 0.2.14 Visual Refinements
 
 - Tightened package card title, badge, type chip, and subtitle spacing.
