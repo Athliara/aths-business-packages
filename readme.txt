@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 0.2.15
+Stable tag: 0.2.16
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -69,6 +69,11 @@ This plugin is distributed under the GNU General Public License v3 or later.
 
 
 
+
+= 0.2.16 =
+
+* Added an optional expiration date field for each package.
+* Expired packages are hidden from public package lists, related suggestions, range filter bounds, and direct package pages while staying editable in WordPress admin.
 
 = 0.2.15 =
 

@@ -17,6 +17,7 @@ class ATHSBP_Plugin {
 	const META_KEY = '_athsbp_package_meta';
 	const PRICE_NUMERIC_META_KEY = '_athsbp_price_numeric';
 	const DURATION_NUMERIC_META_KEY = '_athsbp_duration_numeric';
+	const EXPIRATION_DATE_META_KEY = '_athsbp_expiration_date';
 	const PREDEFINED_SYNC_KEY = '_athsbp_predefined_sync_state';
 	const LEGACY_MIGRATION_KEY = 'athsbp_legacy_prefix_migration_020';
 	const LEGACY_REWRITE_FLUSH_KEY = 'athsbp_legacy_rewrite_flush_020';
@@ -57,6 +58,7 @@ class ATHSBP_Plugin {
 		add_action( 'init', array( $this, 'maybe_sync_predefined_data' ), 20 );
 		add_action( 'init', array( $this, 'maybe_flush_rewrites_after_legacy_migration' ), 30 );
 		add_action( 'admin_init', array( $this, 'redirect_legacy_admin_post_type' ) );
+		add_action( 'pre_get_posts', array( $this, 'exclude_expired_packages_from_main_queries' ) );
 		add_filter( 'request', array( $this, 'map_package_pretty_request' ) );
 		add_action( 'template_redirect', array( $this, 'render_package_pretty_url_directly' ), 0 );
 		add_filter( 'template_include', array( $this, 'load_templates' ) );
@@ -118,6 +120,109 @@ class ATHSBP_Plugin {
 
 		wp_safe_redirect( $url );
 		exit;
+	}
+
+	public function exclude_expired_packages_from_main_queries( $query ) {
+		if ( is_admin() || ! $query instanceof WP_Query || ! $query->is_main_query() ) {
+			return;
+		}
+
+		$post_type = $query->get( 'post_type' );
+		$is_package_query = self::CPT === $post_type || ( is_array( $post_type ) && in_array( self::CPT, $post_type, true ) );
+
+		if ( ! $is_package_query && ! $query->is_post_type_archive( self::CPT ) && ! $query->is_singular( self::CPT ) ) {
+			return;
+		}
+
+		$query->set(
+			'meta_query',
+			$this->merge_meta_queries(
+				$query->get( 'meta_query' ),
+				$this->get_active_package_meta_query_args()
+			)
+		);
+	}
+
+	public function get_today_date() {
+		return current_time( 'Y-m-d' );
+	}
+
+	public function normalize_date_value( $value ) {
+		$value = trim( (string) $value );
+		if ( '' === $value ) {
+			return '';
+		}
+
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+			return $value;
+		}
+
+		return '';
+	}
+
+	public function is_package_expired( $post_id ) {
+		$expiration_date = get_post_meta( $post_id, self::EXPIRATION_DATE_META_KEY, true );
+
+		if ( '' === $expiration_date ) {
+			$meta = $this->get_package_meta( $post_id );
+			$expiration_date = isset( $meta['expiration_date'] ) ? $meta['expiration_date'] : '';
+		}
+
+		$expiration_date = $this->normalize_date_value( $expiration_date );
+
+		return '' !== $expiration_date && $expiration_date < $this->get_today_date();
+	}
+
+	public function get_active_package_meta_query_args() {
+		return array(
+			'relation' => 'OR',
+			array(
+				'key'     => self::EXPIRATION_DATE_META_KEY,
+				'compare' => 'NOT EXISTS',
+			),
+			array(
+				'key'     => self::EXPIRATION_DATE_META_KEY,
+				'value'   => '',
+				'compare' => '=',
+			),
+			array(
+				'key'     => self::EXPIRATION_DATE_META_KEY,
+				'value'   => $this->get_today_date(),
+				'type'    => 'DATE',
+				'compare' => '>=',
+			),
+		);
+	}
+
+	public function merge_meta_queries( $first_query, $second_query ) {
+		$first_query  = is_array( $first_query ) ? $first_query : array();
+		$second_query = is_array( $second_query ) ? $second_query : array();
+
+		if ( empty( $first_query ) ) {
+			return $second_query;
+		}
+
+		if ( empty( $second_query ) ) {
+			return $first_query;
+		}
+
+		return array(
+			'relation' => 'AND',
+			$first_query,
+			$second_query,
+		);
+	}
+
+	public function clear_numeric_filter_bounds_cache() {
+		$today = $this->get_today_date();
+		$keys  = array(
+			'numeric_bounds_' . md5( self::PRICE_NUMERIC_META_KEY . '|' . $today ),
+			'numeric_bounds_' . md5( self::DURATION_NUMERIC_META_KEY . '|' . $today ),
+		);
+
+		foreach ( $keys as $key ) {
+			wp_cache_delete( $key, 'aths_business_packages' );
+		}
 	}
 
 	public function get_default_settings() {
@@ -260,6 +365,11 @@ class ATHSBP_Plugin {
 			return;
 		}
 
+		if ( $this->is_package_expired( $package->ID ) ) {
+			$this->prepare_direct_404_context();
+			return;
+		}
+
 		global $post, $wp_query;
 		$post = $package;
 		setup_postdata( $post );
@@ -322,6 +432,17 @@ class ATHSBP_Plugin {
 			$wp_query->is_singular       = true;
 			$wp_query->is_single         = true;
 		}
+	}
+
+	private function prepare_direct_404_context() {
+		global $wp_query;
+
+		if ( $wp_query instanceof WP_Query ) {
+			$wp_query->set_404();
+		}
+
+		status_header( 404 );
+		nocache_headers();
 	}
 
 	private function render_direct_template( $type ) {
@@ -397,6 +518,20 @@ class ATHSBP_Plugin {
 		}
 
 		if ( is_singular( self::CPT ) ) {
+			$post_id = get_queried_object_id();
+			if ( $post_id && $this->is_package_expired( $post_id ) ) {
+				global $wp_query;
+
+				if ( $wp_query instanceof WP_Query ) {
+					$wp_query->set_404();
+				}
+
+				status_header( 404 );
+				$not_found = get_404_template();
+
+				return $not_found ? $not_found : $template;
+			}
+
 			$single = ATHSBP_PLUGIN_DIR . 'templates/single-athsbp_package.php';
 			if ( file_exists( $single ) ) {
 				return $single;
@@ -561,6 +696,7 @@ class ATHSBP_Plugin {
 			'duration_label'      => $labels['duration_label'],
 			'nights'              => '',
 			'nights_label'        => $labels['nights_label'],
+			'expiration_date'     => '',
 			'description_title'   => $labels['description'],
 			'description_content' => '',
 			'includes_title'      => $labels['whats_included'],
@@ -595,6 +731,8 @@ class ATHSBP_Plugin {
 				$meta[ $meta_key ] = $defaults[ $meta_key ];
 			}
 		}
+
+		$meta['expiration_date'] = $this->normalize_date_value( $meta['expiration_date'] );
 
 		if ( ! is_array( $meta['gallery_ids'] ) ) {
 			$meta['gallery_ids'] = array_filter( array_map( 'absint', explode( ',', (string) $meta['gallery_ids'] ) ) );
@@ -853,7 +991,7 @@ class ATHSBP_Plugin {
 	public function get_numeric_filter_bounds( $meta_key ) {
 		global $wpdb;
 
-		$cache_key = 'numeric_bounds_' . md5( (string) $meta_key );
+		$cache_key = 'numeric_bounds_' . md5( (string) $meta_key . '|' . $this->get_today_date() );
 		$cached    = wp_cache_get( $cache_key, 'aths_business_packages' );
 		if ( false !== $cached && is_array( $cached ) ) {
 			return $cached;
@@ -866,10 +1004,14 @@ class ATHSBP_Plugin {
 					"SELECT MIN(COALESCE(CAST(pm.meta_value AS DECIMAL(10,2)), 0)) AS min_value, MAX(COALESCE(CAST(pm.meta_value AS DECIMAL(10,2)), 0)) AS max_value
 					FROM {$wpdb->posts} p
 					LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = %s
+					LEFT JOIN {$wpdb->postmeta} expm ON expm.post_id = p.ID AND expm.meta_key = %s
 					WHERE p.post_type = %s
-					AND p.post_status = 'publish'",
+					AND p.post_status = 'publish'
+					AND (expm.meta_value IS NULL OR expm.meta_value = '' OR expm.meta_value >= %s)",
 					$meta_key,
-					self::CPT
+					self::EXPIRATION_DATE_META_KEY,
+					self::CPT,
+					$this->get_today_date()
 				),
 				ARRAY_A
 			);
@@ -891,11 +1033,15 @@ class ATHSBP_Plugin {
 				"SELECT MIN(CAST(pm.meta_value AS DECIMAL(10,2))) AS min_value, MAX(CAST(pm.meta_value AS DECIMAL(10,2))) AS max_value
 				FROM {$wpdb->postmeta} pm
 				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				LEFT JOIN {$wpdb->postmeta} expm ON expm.post_id = p.ID AND expm.meta_key = %s
 				WHERE pm.meta_key = %s
 				AND p.post_type = %s
-				AND p.post_status = 'publish'",
+				AND p.post_status = 'publish'
+				AND (expm.meta_value IS NULL OR expm.meta_value = '' OR expm.meta_value >= %s)",
+				self::EXPIRATION_DATE_META_KEY,
 				$meta_key,
-				self::CPT
+				self::CPT,
+				$this->get_today_date()
 			),
 			ARRAY_A
 		);

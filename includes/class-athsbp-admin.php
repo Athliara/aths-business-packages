@@ -570,6 +570,11 @@ class ATHSBP_Admin {
 					<label for="abp-nights-label"><?php echo esc_html( $labels['nights_label'] ); ?></label>
 					<input id="abp-nights-label" type="text" name="athsbp_meta[nights_label]" value="<?php echo esc_attr( $meta['nights_label'] ); ?>" class="widefat">
 				</div>
+				<div class="abp-field">
+					<label for="abp-expiration-date"><?php echo esc_html( $labels['expiration_date'] ); ?></label>
+					<input id="abp-expiration-date" type="date" name="athsbp_meta[expiration_date]" value="<?php echo esc_attr( $meta['expiration_date'] ); ?>" class="widefat">
+					<p class="description"><?php echo esc_html( $labels['expiration_date_desc'] ); ?></p>
+				</div>
 			</div>
 		</div>
 
@@ -800,6 +805,7 @@ class ATHSBP_Admin {
 			'duration_label'      => isset( $raw_meta['duration_label'] ) ? sanitize_text_field( $raw_meta['duration_label'] ) : '',
 			'nights'              => isset( $raw_meta['nights'] ) ? sanitize_text_field( $raw_meta['nights'] ) : '',
 			'nights_label'        => isset( $raw_meta['nights_label'] ) ? sanitize_text_field( $raw_meta['nights_label'] ) : '',
+			'expiration_date'     => isset( $raw_meta['expiration_date'] ) ? $this->plugin->normalize_date_value( $raw_meta['expiration_date'] ) : '',
 			'description_title'   => isset( $raw_meta['description_title'] ) ? sanitize_text_field( $raw_meta['description_title'] ) : '',
 			'description_content' => isset( $raw_meta['description_content'] ) ? wp_kses_post( $raw_meta['description_content'] ) : '',
 			'includes_title'      => isset( $raw_meta['includes_title'] ) ? sanitize_text_field( $raw_meta['includes_title'] ) : '',
@@ -814,6 +820,12 @@ class ATHSBP_Admin {
 		);
 
 		update_post_meta( $post_id, ATHSBP_Plugin::META_KEY, $meta );
+
+		if ( '' !== $meta['expiration_date'] ) {
+			update_post_meta( $post_id, ATHSBP_Plugin::EXPIRATION_DATE_META_KEY, $meta['expiration_date'] );
+		} else {
+			delete_post_meta( $post_id, ATHSBP_Plugin::EXPIRATION_DATE_META_KEY );
+		}
 
 		$price_numeric = $this->plugin->extract_numeric_value( $meta['price'] );
 		$duration_numeric = $this->plugin->extract_numeric_value( $meta['duration'] );
@@ -831,6 +843,8 @@ class ATHSBP_Admin {
 		} else {
 			delete_post_meta( $post_id, ATHSBP_Plugin::DURATION_NUMERIC_META_KEY );
 		}
+
+		$this->plugin->clear_numeric_filter_bounds_cache();
 	}
 
 	private function get_editor_labels() {
@@ -864,6 +878,8 @@ class ATHSBP_Admin {
 				'nights_value'              => 'Τιμή Διανυκτερεύσεων',
 				'nights_placeholder'        => '2 νύχτες',
 				'nights_label'              => 'Ετικέτα Διανυκτερεύσεων',
+				'expiration_date'           => 'Ημερομηνία λήξης',
+				'expiration_date_desc'      => 'Προαιρετικό. Μετά από αυτή την ημερομηνία, το πακέτο κρύβεται αυτόματα από λίστες, προτάσεις και την απευθείας σελίδα του.',
 				'gallery'                   => 'Συλλογή Εικόνων',
 				'gallery_desc'              => 'Χρησιμοποιήστε την επιλεγμένη εικόνα ως κύρια εικόνα του πακέτου και προσθέστε εδώ τις υπόλοιπες εικόνες της gallery.',
 				'gallery_images'            => 'Εικόνες Gallery',
@@ -930,6 +946,8 @@ class ATHSBP_Admin {
 			'nights_value'              => 'Nights Value',
 			'nights_placeholder'        => '2 nights',
 			'nights_label'              => 'Nights Label',
+			'expiration_date'           => 'Expiration Date',
+			'expiration_date_desc'      => 'Optional. After this date, the package is automatically hidden from package lists, suggestions, and direct package pages.',
 			'gallery'                   => 'Gallery',
 			'gallery_desc'              => 'Use the featured image as the main package image and add the extra gallery images here.',
 			'gallery_images'            => 'Gallery Images',

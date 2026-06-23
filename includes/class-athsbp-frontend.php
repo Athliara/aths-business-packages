@@ -97,9 +97,12 @@ class ATHSBP_Frontend {
 			$args['tax_query'] = $tax_query;
 		}
 
-		$meta_query = $this->plugin->get_meta_filter_query_args();
+		$meta_query = $this->plugin->merge_meta_queries(
+			$this->plugin->get_meta_filter_query_args(),
+			$this->plugin->get_active_package_meta_query_args()
+		);
 		if ( ! empty( $meta_query ) ) {
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Numeric range filters require package meta filtering.
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Numeric range and active package filters require package meta filtering.
 			$args['meta_query'] = $meta_query;
 		}
 
@@ -758,6 +761,8 @@ class ATHSBP_Frontend {
 					'posts_per_page' => 24,
 					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Similar package relevance is based on shared package taxonomies.
 					'tax_query'      => $tax_query,
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Similar package output excludes expired packages.
+					'meta_query'     => $this->plugin->get_active_package_meta_query_args(),
 					'orderby'        => 'date',
 					'order'          => 'DESC',
 					'no_found_rows'  => true,
@@ -812,6 +817,8 @@ class ATHSBP_Frontend {
 				'post_type'      => ATHSBP_Plugin::CPT,
 				'post_status'    => 'publish',
 				'posts_per_page' => $limit + count( $exclude_ids ),
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Fallback related output excludes expired packages.
+				'meta_query'     => $this->plugin->get_active_package_meta_query_args(),
 				'orderby'        => 'date',
 				'order'          => 'DESC',
 				'no_found_rows'  => true,
