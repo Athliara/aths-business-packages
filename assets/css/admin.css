@@ -556,3 +556,59 @@
 		grid-template-columns: 1fr;
 	}
 }
+
+/* Package Editor Tabs & Panels styling */
+.abp-editor-tabs {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0 0 20px;
+	padding: 6px;
+	border: 1px solid #dbe5f0;
+	border-radius: 14px;
+	background: #f6faff;
+	box-shadow: 0 8px 18px rgba(19, 36, 68, .04);
+}
+
+.abp-editor-tab {
+	border: 0;
+	border-radius: 10px;
+	padding: 11px 18px;
+	background: transparent;
+	color: #173b69;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background .16s ease, color .16s ease, box-shadow .16s ease;
+}
+
+.abp-editor-tab:hover,
+.abp-editor-tab:focus {
+	background: #eaf3ff;
+	color: #12345d;
+	outline: none;
+}
+
+.abp-editor-tab.is-active {
+	background: #173b69;
+	color: #fff;
+	box-shadow: 0 8px 18px rgba(23, 59, 105, .18);
+}
+
+.abp-editor-panel {
+	position: absolute;
+	left: -9999px;
+	top: -9999px;
+	height: 0;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.abp-editor-panel.is-active {
+	position: static;
+	left: auto;
+	top: auto;
+	height: auto;
+	overflow: visible;
+	visibility: visible;
+}
+

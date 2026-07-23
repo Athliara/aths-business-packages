@@ -329,6 +329,19 @@
 		$('.athsbp-settings-panel[data-athsbp-settings-panel="' + target + '"]').addClass('is-active');
 	});
 
+	$(document).on('click', '.abp-editor-tab', function () {
+		var target = $(this).data('athsbp-editor-tab');
+
+		$('.abp-editor-tab').removeClass('is-active');
+		$(this).addClass('is-active');
+
+		$('.abp-editor-panel').removeClass('is-active');
+		$('.abp-editor-panel[data-athsbp-editor-panel="' + target + '"]').addClass('is-active');
+
+		// Trigger resize event to ensure TinyMCE editors adjust correctly when revealed
+		$(window).trigger('resize');
+	});
+
 	$(document).on('click', '.abp-select-gallery', function (event) {
 		event.preventDefault();
 		var container = $(this).closest('.abp-field');

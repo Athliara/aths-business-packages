@@ -510,197 +510,259 @@ class ATHSBP_Admin {
 			</div>
 		</div>
 
-		<div class="abp-meta-section">
-			<div class="abp-meta-section-header">
-				<h4><?php echo esc_html( $labels['core_package_info'] ); ?></h4>
-				<p><?php echo esc_html( $labels['core_package_info_desc'] ); ?></p>
-			</div>
-			<div class="abp-meta-grid">
-				<div class="abp-field">
-					<label for="abp-subtitle"><?php echo esc_html( $labels['subtitle'] ); ?></label>
-					<input id="abp-subtitle" type="text" name="athsbp_meta[subtitle]" value="<?php echo esc_attr( $meta['subtitle'] ); ?>" class="widefat">
-					<p class="description"><?php echo esc_html( $labels['subtitle_desc'] ); ?></p>
+		<nav class="abp-editor-tabs athsbp-editor-tabs" aria-label="<?php esc_attr_e( 'Package sections', 'aths-business-packages' ); ?>">
+			<button type="button" class="abp-editor-tab is-active" data-athsbp-editor-tab="basic"><?php echo esc_html( $labels['core_package_info'] ); ?></button>
+			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="gallery"><?php echo esc_html( $labels['gallery'] ); ?></button>
+			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="description"><?php echo esc_html( $labels['description_section'] ); ?></button>
+			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="includes"><?php echo esc_html( $labels['includes_section'] ); ?></button>
+			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="general_info"><?php echo esc_html( $labels['general_info_section'] ); ?></button>
+			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="tables"><?php echo esc_html( $labels['tables_section'] ); ?></button>
+			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="pdf"><?php echo esc_html( $labels['pdf_section'] ); ?></button>
+		</nav>
+
+		<div class="abp-editor-panel athsbp-editor-panel is-active" data-athsbp-editor-panel="basic">
+			<div class="abp-meta-section">
+				<div class="abp-meta-section-header">
+					<h4><?php echo esc_html( $labels['core_package_info'] ); ?></h4>
+					<p><?php echo esc_html( $labels['core_package_info_desc'] ); ?></p>
 				</div>
-				<div class="abp-field">
-					<label for="abp-card-subtitle"><?php echo esc_html( $labels['card_subtitle'] ); ?></label>
-					<input id="abp-card-subtitle" type="text" name="athsbp_meta[card_subtitle]" value="<?php echo esc_attr( $meta['card_subtitle'] ); ?>" class="widefat">
-					<p class="description"><?php echo esc_html( $labels['card_subtitle_desc'] ); ?></p>
-				</div>
-				<div class="abp-field">
-					<label for="abp-badge-text"><?php echo esc_html( $labels['image_tag_badge'] ); ?></label>
-					<input id="abp-badge-text" type="text" name="athsbp_meta[badge_text]" value="<?php echo esc_attr( $meta['badge_text'] ); ?>" class="widefat">
-					<p class="description"><?php echo esc_html( $labels['image_tag_badge_desc'] ); ?></p>
-				</div>
-				<div class="abp-field">
-					<label for="abp-card-primary-tag"><?php echo esc_html( $labels['card_primary_tag'] ); ?></label>
-					<input id="abp-card-primary-tag" type="text" name="athsbp_meta[card_primary_tag]" value="<?php echo esc_attr( $meta['card_primary_tag'] ); ?>" class="widefat">
-					<p class="description"><?php echo esc_html( $labels['card_primary_tag_desc'] ); ?></p>
-				</div>
-				<div class="abp-field">
-					<label for="abp-card-secondary-tag"><?php echo esc_html( $labels['card_secondary_tag'] ); ?></label>
-					<input id="abp-card-secondary-tag" type="text" name="athsbp_meta[card_secondary_tag]" value="<?php echo esc_attr( $meta['card_secondary_tag'] ); ?>" class="widefat">
-					<p class="description"><?php echo esc_html( $labels['card_secondary_tag_desc'] ); ?></p>
-				</div>
-				<div class="abp-field">
-					<label for="abp-price"><?php echo esc_html( $labels['price_or_price_text'] ); ?></label>
-					<input id="abp-price" type="text" name="athsbp_meta[price]" value="<?php echo esc_attr( $meta['price'] ); ?>" class="widefat">
-					<p class="description"><?php echo esc_html( $labels['price_or_price_text_desc'] ); ?></p>
-				</div>
-				<div class="abp-field">
-					<label for="abp-price-note"><?php echo esc_html( $labels['price_note'] ); ?></label>
-					<input id="abp-price-note" type="text" name="athsbp_meta[price_note]" value="<?php echo esc_attr( $meta['price_note'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['price_note_placeholder'] ); ?>">
-				</div>
-				<div class="abp-field">
-					<label for="abp-price-label"><?php echo esc_html( $labels['price_label'] ); ?></label>
-					<input id="abp-price-label" type="text" name="athsbp_meta[price_label]" value="<?php echo esc_attr( $meta['price_label'] ); ?>" class="widefat">
-				</div>
-				<div class="abp-field">
-					<label for="abp-duration"><?php echo esc_html( $labels['duration_value'] ); ?></label>
-					<input id="abp-duration" type="text" name="athsbp_meta[duration]" value="<?php echo esc_attr( $meta['duration'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['duration_placeholder'] ); ?>">
-				</div>
-				<div class="abp-field">
-					<label for="abp-duration-label"><?php echo esc_html( $labels['duration_label'] ); ?></label>
-					<input id="abp-duration-label" type="text" name="athsbp_meta[duration_label]" value="<?php echo esc_attr( $meta['duration_label'] ); ?>" class="widefat">
-				</div>
-				<div class="abp-field">
-					<label for="abp-nights"><?php echo esc_html( $labels['nights_value'] ); ?></label>
-					<input id="abp-nights" type="text" name="athsbp_meta[nights]" value="<?php echo esc_attr( $meta['nights'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['nights_placeholder'] ); ?>">
-				</div>
-				<div class="abp-field">
-					<label for="abp-nights-label"><?php echo esc_html( $labels['nights_label'] ); ?></label>
-					<input id="abp-nights-label" type="text" name="athsbp_meta[nights_label]" value="<?php echo esc_attr( $meta['nights_label'] ); ?>" class="widefat">
-				</div>
-				<div class="abp-field">
-					<label for="abp-expiration-date"><?php echo esc_html( $labels['expiration_date'] ); ?></label>
-					<input id="abp-expiration-date" type="date" name="athsbp_meta[expiration_date]" value="<?php echo esc_attr( $meta['expiration_date'] ); ?>" class="widefat">
-					<p class="description"><?php echo esc_html( $labels['expiration_date_desc'] ); ?></p>
+				<div class="abp-meta-grid">
+					<div class="abp-field">
+						<label for="abp-subtitle"><?php echo esc_html( $labels['subtitle'] ); ?></label>
+						<input id="abp-subtitle" type="text" name="athsbp_meta[subtitle]" value="<?php echo esc_attr( $meta['subtitle'] ); ?>" class="widefat">
+						<p class="description"><?php echo esc_html( $labels['subtitle_desc'] ); ?></p>
+					</div>
+					<div class="abp-field">
+						<label for="abp-card-subtitle"><?php echo esc_html( $labels['card_subtitle'] ); ?></label>
+						<input id="abp-card-subtitle" type="text" name="athsbp_meta[card_subtitle]" value="<?php echo esc_attr( $meta['card_subtitle'] ); ?>" class="widefat">
+						<p class="description"><?php echo esc_html( $labels['card_subtitle_desc'] ); ?></p>
+					</div>
+					<div class="abp-field">
+						<label for="abp-badge-text"><?php echo esc_html( $labels['image_tag_badge'] ); ?></label>
+						<input id="abp-badge-text" type="text" name="athsbp_meta[badge_text]" value="<?php echo esc_attr( $meta['badge_text'] ); ?>" class="widefat">
+						<p class="description"><?php echo esc_html( $labels['image_tag_badge_desc'] ); ?></p>
+					</div>
+					<div class="abp-field">
+						<label for="abp-card-primary-tag"><?php echo esc_html( $labels['card_primary_tag'] ); ?></label>
+						<input id="abp-card-primary-tag" type="text" name="athsbp_meta[card_primary_tag]" value="<?php echo esc_attr( $meta['card_primary_tag'] ); ?>" class="widefat">
+						<p class="description"><?php echo esc_html( $labels['card_primary_tag_desc'] ); ?></p>
+					</div>
+					<div class="abp-field">
+						<label for="abp-card-secondary-tag"><?php echo esc_html( $labels['card_secondary_tag'] ); ?></label>
+						<input id="abp-card-secondary-tag" type="text" name="athsbp_meta[card_secondary_tag]" value="<?php echo esc_attr( $meta['card_secondary_tag'] ); ?>" class="widefat">
+						<p class="description"><?php echo esc_html( $labels['card_secondary_tag_desc'] ); ?></p>
+					</div>
+					<div class="abp-field">
+						<label for="abp-price"><?php echo esc_html( $labels['price_or_price_text'] ); ?></label>
+						<input id="abp-price" type="text" name="athsbp_meta[price]" value="<?php echo esc_attr( $meta['price'] ); ?>" class="widefat">
+						<p class="description"><?php echo esc_html( $labels['price_or_price_text_desc'] ); ?></p>
+					</div>
+					<div class="abp-field">
+						<label for="abp-price-note"><?php echo esc_html( $labels['price_note'] ); ?></label>
+						<input id="abp-price-note" type="text" name="athsbp_meta[price_note]" value="<?php echo esc_attr( $meta['price_note'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['price_note_placeholder'] ); ?>">
+					</div>
+					<div class="abp-field">
+						<label for="abp-price-label"><?php echo esc_html( $labels['price_label'] ); ?></label>
+						<input id="abp-price-label" type="text" name="athsbp_meta[price_label]" value="<?php echo esc_attr( $meta['price_label'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-duration"><?php echo esc_html( $labels['duration_value'] ); ?></label>
+						<input id="abp-duration" type="text" name="athsbp_meta[duration]" value="<?php echo esc_attr( $meta['duration'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['duration_placeholder'] ); ?>">
+					</div>
+					<div class="abp-field">
+						<label for="abp-duration-label"><?php echo esc_html( $labels['duration_label'] ); ?></label>
+						<input id="abp-duration-label" type="text" name="athsbp_meta[duration_label]" value="<?php echo esc_attr( $meta['duration_label'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-nights"><?php echo esc_html( $labels['nights_value'] ); ?></label>
+						<input id="abp-nights" type="text" name="athsbp_meta[nights]" value="<?php echo esc_attr( $meta['nights'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['nights_placeholder'] ); ?>">
+					</div>
+					<div class="abp-field">
+						<label for="abp-nights-label"><?php echo esc_html( $labels['nights_label'] ); ?></label>
+						<input id="abp-nights-label" type="text" name="athsbp_meta[nights_label]" value="<?php echo esc_attr( $meta['nights_label'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-expiration-date"><?php echo esc_html( $labels['expiration_date'] ); ?></label>
+						<input id="abp-expiration-date" type="date" name="athsbp_meta[expiration_date]" value="<?php echo esc_attr( $meta['expiration_date'] ); ?>" class="widefat">
+						<p class="description"><?php echo esc_html( $labels['expiration_date_desc'] ); ?></p>
+					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="abp-meta-section">
-			<div class="abp-meta-section-header">
-				<h4><?php echo esc_html( $labels['gallery'] ); ?></h4>
-				<p><?php echo esc_html( $labels['gallery_desc'] ); ?></p>
-			</div>
-			<div class="abp-field">
-				<label><?php echo esc_html( $labels['gallery_images'] ); ?></label>
-				<input type="hidden" class="abp-gallery-input" name="athsbp_meta[gallery_ids]" value="<?php echo esc_attr( implode( ',', array_map( 'absint', $meta['gallery_ids'] ) ) ); ?>">
-				<div class="abp-gallery-preview">
-					<?php foreach ( $meta['gallery_ids'] as $image_id ) : ?>
-						<?php echo wp_get_attachment_image( $image_id, 'thumbnail' ); ?>
-					<?php endforeach; ?>
+		<div class="abp-editor-panel athsbp-editor-panel" data-athsbp-editor-panel="gallery">
+			<div class="abp-meta-section">
+				<div class="abp-meta-section-header">
+					<h4><?php echo esc_html( $labels['gallery'] ); ?></h4>
+					<p><?php echo esc_html( $labels['gallery_desc'] ); ?></p>
 				</div>
-				<p class="abp-button-row">
-					<button type="button" class="button abp-select-gallery"><?php echo esc_html( $labels['choose_gallery_images'] ); ?></button>
-					<button type="button" class="button-link-delete abp-clear-gallery"><?php echo esc_html( $labels['clear_gallery'] ); ?></button>
-				</p>
+				<div class="abp-field">
+					<label><?php echo esc_html( $labels['gallery_images'] ); ?></label>
+					<input type="hidden" class="abp-gallery-input" name="athsbp_meta[gallery_ids]" value="<?php echo esc_attr( implode( ',', array_map( 'absint', $meta['gallery_ids'] ) ) ); ?>">
+					<div class="abp-gallery-preview">
+						<?php foreach ( $meta['gallery_ids'] as $image_id ) : ?>
+							<?php echo wp_get_attachment_image( $image_id, 'thumbnail' ); ?>
+						<?php endforeach; ?>
+					</div>
+					<p class="abp-button-row">
+						<button type="button" class="button abp-select-gallery"><?php echo esc_html( $labels['choose_gallery_images'] ); ?></button>
+						<button type="button" class="button-link-delete abp-clear-gallery"><?php echo esc_html( $labels['clear_gallery'] ); ?></button>
+					</p>
+				</div>
 			</div>
 		</div>
 
-		<div class="abp-meta-section">
-			<div class="abp-meta-section-header">
-				<h4><?php echo esc_html( $labels['description_section'] ); ?></h4>
-				<p><?php echo esc_html( $labels['description_section_desc'] ); ?></p>
-			</div>
-			<div class="abp-field">
-				<label for="abp-description-title"><?php echo esc_html( $labels['description_section_title'] ); ?></label>
-				<input id="abp-description-title" type="text" name="athsbp_meta[description_title]" value="<?php echo esc_attr( $meta['description_title'] ); ?>" class="widefat">
-			</div>
-			<div class="abp-field">
-				<label for="abp-description-content"><?php echo esc_html( $labels['description_content'] ); ?></label>
-				<?php
-				wp_editor(
-					$meta['description_content'],
-					'athsbp_description_content',
-					array(
-						'textarea_name' => 'athsbp_meta[description_content]',
-						'textarea_rows' => 6,
-					)
-				);
-				?>
+		<div class="abp-editor-panel athsbp-editor-panel" data-athsbp-editor-panel="description">
+			<div class="abp-meta-section">
+				<div class="abp-meta-section-header">
+					<h4><?php echo esc_html( $labels['description_section'] ); ?></h4>
+					<p><?php echo esc_html( $labels['description_section_desc'] ); ?></p>
+				</div>
+				<div class="abp-field">
+					<label for="abp-description-title"><?php echo esc_html( $labels['description_section_title'] ); ?></label>
+					<input id="abp-description-title" type="text" name="athsbp_meta[description_title]" value="<?php echo esc_attr( $meta['description_title'] ); ?>" class="widefat">
+				</div>
+				<div class="abp-field">
+					<label for="abp-description-content"><?php echo esc_html( $labels['description_content'] ); ?></label>
+					<?php
+					wp_editor(
+						$meta['description_content'],
+						'athsbp_description_content',
+						array(
+							'textarea_name' => 'athsbp_meta[description_content]',
+							'textarea_rows' => 6,
+						)
+					);
+					?>
+				</div>
 			</div>
 		</div>
 
-		<div class="abp-meta-section">
-			<div class="abp-meta-section-header">
-				<h4><?php echo esc_html( $labels['includes_section'] ); ?></h4>
-				<p><?php echo esc_html( $labels['includes_section_desc'] ); ?></p>
-			</div>
-			<div class="abp-field">
-				<label for="abp-includes-title"><?php echo esc_html( $labels['includes_section_title'] ); ?></label>
-				<input id="abp-includes-title" type="text" name="athsbp_meta[includes_title]" value="<?php echo esc_attr( $meta['includes_title'] ); ?>" class="widefat">
-			</div>
-			<div class="abp-field">
-				<label for="abp-includes-content"><?php echo esc_html( $labels['includes_content'] ); ?></label>
-				<?php
-				wp_editor(
-					$meta['includes_content'],
-					'athsbp_includes_content',
-					array(
-						'textarea_name' => 'athsbp_meta[includes_content]',
-						'textarea_rows' => 5,
-					)
-				);
-				?>
-			</div>
-			<div class="abp-field">
-				<label for="abp-excludes-title"><?php echo esc_html( $labels['excludes_section_title'] ); ?></label>
-				<input id="abp-excludes-title" type="text" name="athsbp_meta[excludes_title]" value="<?php echo esc_attr( $meta['excludes_title'] ); ?>" class="widefat">
-			</div>
-			<div class="abp-field">
-				<label for="abp-excludes-content"><?php echo esc_html( $labels['excludes_content'] ); ?></label>
-				<?php
-				wp_editor(
-					$meta['excludes_content'],
-					'athsbp_excludes_content',
-					array(
-						'textarea_name' => 'athsbp_meta[excludes_content]',
-						'textarea_rows' => 5,
-					)
-				);
-				?>
-			</div>
-			<div class="abp-field">
-				<label for="abp-includes-table-html"><?php echo esc_html( $labels['manual_table_editor'] ); ?></label>
-				<p class="description"><?php echo esc_html( $labels['manual_table_editor_desc'] ); ?></p>
-				<?php
-				wp_editor(
-					$meta['includes_table_html'],
-					'athsbp_includes_table_html',
-					array(
-						'textarea_name' => 'athsbp_meta[includes_table_html]',
-						'textarea_rows' => 6,
-					)
-				);
-				?>
-			</div>
-			<div class="abp-field">
-				<div class="abp-table-builders" data-next-index="<?php echo esc_attr( max( 1, count( $meta['includes_tables'] ) ) ); ?>">
-					<?php foreach ( ! empty( $meta['includes_tables'] ) ? $meta['includes_tables'] : array( '' ) as $table_index => $table_text ) : ?>
-						<?php $this->render_table_builder( $table_index, $table_text, $labels ); ?>
-					<?php endforeach; ?>
+		<div class="abp-editor-panel athsbp-editor-panel" data-athsbp-editor-panel="includes">
+			<div class="abp-meta-section">
+				<div class="abp-meta-section-header">
+					<h4><?php echo esc_html( $labels['includes_section'] ); ?></h4>
+					<p><?php echo esc_html( $labels['includes_section_desc'] ); ?></p>
 				</div>
-				<p class="abp-button-row">
-					<button type="button" class="button button-secondary abp-add-table"><?php echo esc_html( $labels['add_another_table'] ); ?></button>
-				</p>
+				<div class="abp-field">
+					<label for="abp-includes-title"><?php echo esc_html( $labels['includes_section_title'] ); ?></label>
+					<input id="abp-includes-title" type="text" name="athsbp_meta[includes_title]" value="<?php echo esc_attr( $meta['includes_title'] ); ?>" class="widefat">
+				</div>
+				<div class="abp-field">
+					<label for="abp-includes-content"><?php echo esc_html( $labels['includes_content'] ); ?></label>
+					<?php
+					wp_editor(
+						$meta['includes_content'],
+						'athsbp_includes_content',
+						array(
+							'textarea_name' => 'athsbp_meta[includes_content]',
+							'textarea_rows' => 5,
+						)
+					);
+					?>
+				</div>
+				<div class="abp-field">
+					<label for="abp-excludes-title"><?php echo esc_html( $labels['excludes_section_title'] ); ?></label>
+					<input id="abp-excludes-title" type="text" name="athsbp_meta[excludes_title]" value="<?php echo esc_attr( $meta['excludes_title'] ); ?>" class="widefat">
+				</div>
+				<div class="abp-field">
+					<label for="abp-excludes-content"><?php echo esc_html( $labels['excludes_content'] ); ?></label>
+					<?php
+					wp_editor(
+						$meta['excludes_content'],
+						'athsbp_excludes_content',
+						array(
+							'textarea_name' => 'athsbp_meta[excludes_content]',
+							'textarea_rows' => 5,
+						)
+					);
+					?>
+				</div>
 			</div>
-			<div class="abp-field abp-pdf-field">
-				<label><?php echo esc_html( $labels['includes_pdf'] ); ?></label>
-				<input type="hidden" class="abp-pdf-input" name="athsbp_meta[includes_pdf_id]" value="<?php echo esc_attr( absint( $meta['includes_pdf_id'] ) ); ?>">
-				<div class="abp-pdf-preview">
-					<?php if ( $meta['includes_pdf_id'] ) : ?>
-						<?php $pdf_url = wp_get_attachment_url( $meta['includes_pdf_id'] ); ?>
-						<?php if ( $pdf_url ) : ?>
-							<a href="<?php echo esc_url( $pdf_url ); ?>" target="_blank" rel="noopener"><?php echo esc_html( get_the_title( $meta['includes_pdf_id'] ) ); ?></a>
+		</div>
+
+		<div class="abp-editor-panel athsbp-editor-panel" data-athsbp-editor-panel="general_info">
+			<div class="abp-meta-section">
+				<div class="abp-meta-section-header">
+					<h4><?php echo esc_html( $labels['general_info_section'] ); ?></h4>
+					<p><?php echo esc_html( $labels['general_info_section_desc'] ); ?></p>
+				</div>
+				<div class="abp-field">
+					<label for="abp-general-info-title"><?php echo esc_html( $labels['general_info_section_title'] ); ?></label>
+					<input id="abp-general-info-title" type="text" name="athsbp_meta[general_info_title]" value="<?php echo esc_attr( $meta['general_info_title'] ); ?>" class="widefat">
+				</div>
+				<div class="abp-field">
+					<label for="abp-general-info-content"><?php echo esc_html( $labels['general_info_content'] ); ?></label>
+					<?php
+					wp_editor(
+						$meta['general_info_content'],
+						'athsbp_general_info_content',
+						array(
+							'textarea_name' => 'athsbp_meta[general_info_content]',
+							'textarea_rows' => 5,
+						)
+					);
+					?>
+				</div>
+			</div>
+		</div>
+
+		<div class="abp-editor-panel athsbp-editor-panel" data-athsbp-editor-panel="tables">
+			<div class="abp-meta-section">
+				<div class="abp-meta-section-header">
+					<h4><?php echo esc_html( $labels['tables_section'] ); ?></h4>
+					<p><?php echo esc_html( $labels['tables_section_desc'] ); ?></p>
+				</div>
+				<div class="abp-field">
+					<label for="abp-includes-table-html"><?php echo esc_html( $labels['manual_table_editor'] ); ?></label>
+					<p class="description"><?php echo esc_html( $labels['manual_table_editor_desc'] ); ?></p>
+					<?php
+					wp_editor(
+						$meta['includes_table_html'],
+						'athsbp_includes_table_html',
+						array(
+							'textarea_name' => 'athsbp_meta[includes_table_html]',
+							'textarea_rows' => 6,
+						)
+					);
+					?>
+				</div>
+				<div class="abp-field">
+					<div class="abp-table-builders" data-next-index="<?php echo esc_attr( max( 1, count( $meta['includes_tables'] ) ) ); ?>">
+						<?php foreach ( ! empty( $meta['includes_tables'] ) ? $meta['includes_tables'] : array( '' ) as $table_index => $table_text ) : ?>
+							<?php $this->render_table_builder( $table_index, $table_text, $labels ); ?>
+						<?php endforeach; ?>
+					</div>
+					<p class="abp-button-row">
+						<button type="button" class="button button-secondary abp-add-table"><?php echo esc_html( $labels['add_another_table'] ); ?></button>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="abp-editor-panel athsbp-editor-panel" data-athsbp-editor-panel="pdf">
+			<div class="abp-meta-section">
+				<div class="abp-meta-section-header">
+					<h4><?php echo esc_html( $labels['pdf_section'] ); ?></h4>
+					<p><?php echo esc_html( $labels['pdf_section_desc'] ); ?></p>
+				</div>
+				<div class="abp-field abp-pdf-field">
+					<label><?php echo esc_html( $labels['includes_pdf'] ); ?></label>
+					<input type="hidden" class="abp-pdf-input" name="athsbp_meta[includes_pdf_id]" value="<?php echo esc_attr( absint( $meta['includes_pdf_id'] ) ); ?>">
+					<div class="abp-pdf-preview">
+						<?php if ( $meta['includes_pdf_id'] ) : ?>
+							<?php $pdf_url = wp_get_attachment_url( $meta['includes_pdf_id'] ); ?>
+							<?php if ( $pdf_url ) : ?>
+								<a href="<?php echo esc_url( $pdf_url ); ?>" target="_blank" rel="noopener"><?php echo esc_html( get_the_title( $meta['includes_pdf_id'] ) ); ?></a>
+							<?php endif; ?>
 						<?php endif; ?>
-					<?php endif; ?>
+					</div>
+					<p class="description"><?php echo esc_html( $labels['includes_pdf_desc'] ); ?></p>
+					<p class="abp-button-row">
+						<button type="button" class="button button-secondary abp-select-pdf"><?php echo esc_html( $labels['choose_pdf'] ); ?></button>
+						<button type="button" class="button-link-delete abp-clear-pdf"><?php echo esc_html( $labels['clear_pdf'] ); ?></button>
+					</p>
 				</div>
-				<p class="description"><?php echo esc_html( $labels['includes_pdf_desc'] ); ?></p>
-				<p class="abp-button-row">
-					<button type="button" class="button button-secondary abp-select-pdf"><?php echo esc_html( $labels['choose_pdf'] ); ?></button>
-					<button type="button" class="button-link-delete abp-clear-pdf"><?php echo esc_html( $labels['clear_pdf'] ); ?></button>
-				</p>
 			</div>
 		</div>
 		<?php
@@ -813,6 +875,8 @@ class ATHSBP_Admin {
 			'includes_table_html' => isset( $raw_meta['includes_table_html'] ) ? wp_kses_post( $raw_meta['includes_table_html'] ) : '',
 			'excludes_title'      => isset( $raw_meta['excludes_title'] ) ? sanitize_text_field( $raw_meta['excludes_title'] ) : '',
 			'excludes_content'    => isset( $raw_meta['excludes_content'] ) ? wp_kses_post( $raw_meta['excludes_content'] ) : '',
+			'general_info_title'  => isset( $raw_meta['general_info_title'] ) ? sanitize_text_field( $raw_meta['general_info_title'] ) : '',
+			'general_info_content'=> isset( $raw_meta['general_info_content'] ) ? wp_kses_post( $raw_meta['general_info_content'] ) : '',
 			'includes_table'      => ! empty( $includes_tables ) ? $includes_tables[0] : '',
 			'includes_tables'     => $includes_tables,
 			'includes_pdf_id'     => isset( $raw_meta['includes_pdf_id'] ) ? absint( $raw_meta['includes_pdf_id'] ) : 0,
@@ -893,8 +957,16 @@ class ATHSBP_Admin {
 				'includes_section_desc'     => 'Χρησιμοποιήστε τον editor για σημειώσεις και λίστες και στη συνέχεια δημιουργήστε έναν αντίστοιχο πίνακα αν χρειάζεται.',
 				'includes_section_title'    => 'Τίτλος Ενότητας Περιλαμβάνονται',
 				'includes_content'          => 'Περιεχόμενο Περιλαμβάνονται',
-				'excludes_section_title'    => 'Τίτλος Ενότητας Δεν Περιλαμβάνονται',
+				'excludes_title'            => 'Τίτλος Ενότητας Δεν Περιλαμβάνονται',
 				'excludes_content'          => 'Περιεχόμενο Δεν Περιλαμβάνονται',
+				'general_info_section'      => 'Γενικές Πληροφορίες',
+				'general_info_section_desc' => 'Αυτό είναι το περιεχόμενο γενικών πληροφοριών της σελίδας πακέτου.',
+				'general_info_section_title'=> 'Τίτλος Ενότητας Γενικές Πληροφορίες',
+				'general_info_content'      => 'Περιεχόμενο Γενικές Πληροφορίες',
+				'tables_section'            => 'Ενότητα Πίνακες',
+				'tables_section_desc'       => 'Διαχειριστείτε τους πίνακες που εμφανίζονται στη σελίδα του πακέτου.',
+				'pdf_section'               => 'Ενότητα Αρχεία PDF',
+				'pdf_section_desc'          => 'Διαχειριστείτε το αρχείο PDF που συνδέεται με το πακέτο.',
 				'manual_table_editor'      => 'Πίνακες με κείμενο / HTML editor',
 				'manual_table_editor_desc' => 'Προαιρετικό πεδίο για έτοιμο HTML πίνακα ή περιεχόμενο πίνακα από visual/code editor, αν δεν θέλετε να χρησιμοποιήσετε τον custom table builder.',
 				'custom_table_builder'      => 'Δημιουργός Προσαρμοσμένου Πίνακα',
@@ -963,6 +1035,14 @@ class ATHSBP_Admin {
 			'includes_content'          => 'Includes Content',
 			'excludes_section_title'    => 'Not Included Section Title',
 			'excludes_content'          => 'Not Included Content',
+			'general_info_section'      => 'General Information',
+			'general_info_section_desc' => 'This is the general information content of the package page.',
+			'general_info_section_title'=> 'General Information Title',
+			'general_info_content'      => 'General Information Content',
+			'tables_section'            => 'Tables Section',
+			'tables_section_desc'       => 'Manage the tables displayed on the package page.',
+			'pdf_section'               => 'PDF Files Section',
+			'pdf_section_desc'          => 'Manage the PDF document associated with this package.',
 			'manual_table_editor'      => 'Text / HTML Table Editor',
 			'manual_table_editor_desc' => 'Optional field for ready-made HTML tables or table content from the visual/code editor if you do not want to use the custom table builder.',
 			'custom_table_builder'      => 'Custom Table Builder',

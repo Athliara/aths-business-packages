@@ -704,6 +704,8 @@ class ATHSBP_Plugin {
 			'includes_table_html' => '',
 			'excludes_title'      => $labels['whats_not_included'],
 			'excludes_content'    => '',
+			'general_info_title'  => $labels['general_info'],
+			'general_info_content'=> '',
 			'includes_table'      => '',
 			'includes_tables'     => array(),
 			'includes_pdf_id'     => 0,
@@ -718,12 +720,13 @@ class ATHSBP_Plugin {
 		$meta = wp_parse_args( $meta, $defaults );
 
 		$translatable_meta_defaults = array(
-			'price_label'       => array( 'Price', 'Τιμή' ),
-			'duration_label'    => array( 'Duration', 'Διάρκεια' ),
-			'nights_label'      => array( 'Nights', 'Διανυκτερεύσεις' ),
-			'description_title' => array( 'Description', 'Περιγραφή' ),
-			'includes_title'    => array( 'What\'s Included', 'Τι Περιλαμβάνεται', 'Τι περιλαμβάνεται' ),
-			'excludes_title'    => array( 'What\'s Not Included', 'Τι δεν περιλαμβάνεται' ),
+			'price_label'        => array( 'Price', 'Τιμή' ),
+			'duration_label'     => array( 'Duration', 'Διάρκεια' ),
+			'nights_label'       => array( 'Nights', 'Διανυκτερεύσεις' ),
+			'description_title'  => array( 'Description', 'Περιγραφή' ),
+			'includes_title'     => array( 'What\'s Included', 'Τι Περιλαμβάνεται', 'Τι περιλαμβάνεται' ),
+			'excludes_title'     => array( 'What\'s Not Included', 'Τι δεν περιλαμβάνεται' ),
+			'general_info_title' => array( 'General Information', 'Γενικές Πληροφορίες' ),
 		);
 
 		foreach ( $translatable_meta_defaults as $meta_key => $legacy_values ) {
@@ -1102,6 +1105,7 @@ class ATHSBP_Plugin {
 				'description'             => 'Description',
 				'whats_included'          => 'What\'s Included',
 				'whats_not_included'      => 'What\'s Not Included',
+				'general_info'            => 'General Information',
 				'package_tables'          => 'Package Tables',
 				'similar_packages'        => 'Similar Packages',
 				'archive_title'           => 'Travel Packages',
@@ -1140,6 +1144,7 @@ class ATHSBP_Plugin {
 				'description'             => 'Περιγραφή',
 				'whats_included'          => 'Τι περιλαμβάνεται',
 				'whats_not_included'      => 'Τι δεν περιλαμβάνεται',
+				'general_info'            => 'Γενικές Πληροφορίες',
 				'package_tables'          => 'Πίνακες πακέτου',
 				'similar_packages'        => 'Παρόμοια Πακέτα',
 				'archive_title'           => 'Ταξιδιωτικά Πακέτα',

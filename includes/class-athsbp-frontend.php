@@ -503,6 +503,7 @@ class ATHSBP_Frontend {
 		$labels        = $this->plugin->get_ui_labels();
 		$has_includes      = '' !== trim( wp_strip_all_tags( $meta['includes_content'] ) );
 		$has_excludes      = '' !== trim( wp_strip_all_tags( $meta['excludes_content'] ) );
+		$has_general_info  = '' !== trim( wp_strip_all_tags( $meta['general_info_content'] ) );
 		$has_manual_table  = '' !== trim( wp_strip_all_tags( $meta['includes_table_html'] ) );
 		$has_tables        = ! empty( $meta['includes_tables'] );
 		$has_pdf       = ! empty( $meta['includes_pdf_id'] );
@@ -581,6 +582,13 @@ class ATHSBP_Frontend {
 				<section class="abp-content-section abp-excludes-section">
 					<h2><?php echo esc_html( $meta['excludes_title'] ); ?></h2>
 					<div class="abp-richtext"><?php echo wp_kses_post( wpautop( $meta['excludes_content'] ) ); ?></div>
+				</section>
+			<?php endif; ?>
+
+			<?php if ( $has_general_info ) : ?>
+				<section class="abp-content-section abp-general-info-section">
+					<h2><?php echo esc_html( $meta['general_info_title'] ); ?></h2>
+					<div class="abp-richtext"><?php echo wp_kses_post( wpautop( $meta['general_info_content'] ) ); ?></div>
 				</section>
 			<?php endif; ?>
 
