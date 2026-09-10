@@ -612,3 +612,69 @@
 	visibility: visible;
 }
 
+/* AI Import Section Styling */
+.abp-heading-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
+}
+
+.abp-heading-actions .button {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 36px;
+	padding: 0 14px;
+	border-radius: 8px;
+	font-weight: 600;
+}
+
+.abp-heading-actions .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	line-height: 1;
+}
+
+.abp-copy-instructions.is-copied {
+	background: #e6f7ec !important;
+	border-color: #38a169 !important;
+	color: #22543d !important;
+}
+
+.abp-ai-instructions-box {
+	margin-top: 16px;
+}
+
+.abp-instructions-textarea {
+	background: #f8fafc;
+	border: 1px solid #cbd5e1;
+	border-radius: 12px;
+	padding: 14px;
+	font-family: Consolas, Monaco, "Courier New", monospace;
+	font-size: 13px;
+	line-height: 1.6;
+	color: #1e293b;
+	resize: vertical;
+}
+
+.abp-import-form .form-table th {
+	width: 220px;
+	font-weight: 600;
+}
+
+.abp-import-form textarea.code {
+	font-family: Consolas, Monaco, "Courier New", monospace;
+	font-size: 13px;
+	background: #f8fafc;
+	border-radius: 8px;
+	border: 1px solid #cbd5e1;
+}
+
+.athsbp-admin-notice {
+	margin: 20px 0;
+	border-radius: 8px;
+}
+
+

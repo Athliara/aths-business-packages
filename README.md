@@ -2,7 +2,7 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.2.17`
+Current version: `0.2.18`
 
 ## What this version includes
 
@@ -20,6 +20,7 @@ Current version: `0.2.17`
 - Similar package suggestions rank relevant taxonomy matches first and then fall back to recent alternatives
 - Styling tab controls for frontend titles, subtitles, labels, tags, card image labels, range sliders, and pagination
 - Dynamic two-tag package cards using Important Holidays and Travel Categories by default, with manual per-package overrides
+- AI Package Import tool to import travel packages from JSON files or raw JSON text, with bundled AI agent instructions and downloadable markdown guide
 
 ## Installation
 
@@ -46,7 +47,7 @@ Current version: `0.2.17`
 
 - Main plugin header includes plugin name, description, version, WordPress requirement, PHP requirement, author, license, text domain, and domain path.
 - `readme.txt` follows the WordPress.org readme structure and includes requirements, stable tag, license, installation, FAQ, and changelog sections.
-- Stable tag and main plugin version are aligned at `0.2.17`.
+- Stable tag and main plugin version are aligned at `0.2.18`.
 - Author/developer is `Athlios`.
 - Contributor username is listed as `athlios`.
 - License is `GPL-3.0-or-later` with the GNU GPL v3 license URI.
@@ -61,13 +62,22 @@ Current version: `0.2.17`
 - Card image labels have their own frontend text and background color settings.
 - Filter order can be changed from `Business Packages -> Settings` using the drag handles in the settings screen.
 - Text-only prices are treated as zero for price-range filtering but remain unchanged in package display.
-- Currency output uses symbols such as `â‚¬`, `$`, and `Â£` where available.
+- Currency output uses symbols such as `€`, `$`, and `£` where available.
 - Package rich-text lists keep proper bullets/numbers even when the active theme removes list styling globally.
 - The featured image is available as the first gallery thumbnail so visitors can return to the original main image.
 - The internal Package Types taxonomy is hidden from package editing so only active filters remain visible.
 - License: `GNU General Public License v3 or later`
 
 
+
+## 0.2.18 AI Package Import
+
+- Added AI Package Import tool in plugin settings to quickly import travel packages from JSON files or raw JSON text.
+- Added ready-to-use instructions for AI agents (ChatGPT, Claude, Gemini, etc.) to convert travel package brochures (PDF, Word, flyers) into structured package JSON.
+- Added a one-click "Copy Instructions" button and a direct "Download Instructions (.md)" button in plugin settings.
+- Added automatic term creation and assignment for package taxonomies (Destinations, Countries, Important Holidays, Travel Categories, and custom taxonomies) during import.
+- Added automatic stripping of markdown code fences (```json ... ```) when pasting AI conversation responses.
+- Added option to import packages as immediately published or saved as draft.
 
 ## 0.2.17 Tabbed Editor & General Information
 

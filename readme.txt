@@ -2,9 +2,9 @@
 Contributors: athlios
 Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.2.17
+Stable tag: 0.2.18
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -31,6 +31,7 @@ Main features:
 * Separate rich-text sections for what is included and what is not included.
 * Styling controls for labels, tags, titles, subtitles, card image badges, and range sliders.
 * Dynamic two-tag package cards using Important Holidays and Travel Categories, with per-package manual tag overrides.
+* AI Package Import tool to import travel packages from JSON files or raw JSON text, with bundled AI agent instructions and downloadable markdown guide.
 
 This plugin is intended for WordPress 6.9 or later and requires PHP 8.2 or later. The codebase has also been checked with modern PHP versions, including PHP 8.5.
 
@@ -69,6 +70,15 @@ This plugin is distributed under the GNU General Public License v3 or later.
 
 
 
+
+= 0.2.18 =
+
+* Added AI Package Import tool in plugin settings to quickly import travel packages from JSON files or raw JSON text.
+* Added ready-to-use instructions for AI agents (ChatGPT, Claude, Gemini, etc.) to convert travel package brochures (PDF, Word, flyers) into structured package JSON.
+* Added a one-click "Copy Instructions" button and a direct "Download Instructions (.md)" button in plugin settings.
+* Added automatic term creation and assignment for package taxonomies (Destinations, Countries, Important Holidays, Travel Categories, and custom taxonomies) during import.
+* Added automatic stripping of markdown code fences (```json ... ```) when pasting AI conversation responses.
+* Added option to import packages as immediately published or saved as draft.
 
 = 0.2.17 =
 

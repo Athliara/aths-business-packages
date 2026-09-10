@@ -1705,4 +1705,300 @@ class ATHSBP_Plugin {
 
 		return sprintf( $descriptions[ $group_slug ][ $language ], $name );
 	}
+
+	/**
+	 * Sanitize table text entries for package storage.
+	 *
+	 * @param array $tables Array of raw table strings.
+	 * @return array Cleaned table strings.
+	 */
+	public function sanitize_table_list( $tables ) {
+		if ( ! is_array( $tables ) ) {
+			return array();
+		}
+
+		$clean = array();
+
+		foreach ( $tables as $table ) {
+			$table = sanitize_textarea_field( $table );
+			if ( '' === trim( $table ) ) {
+				continue;
+			}
+
+			$clean[] = $table;
+		}
+
+		return $clean;
+	}
+
+	/**
+	 * Save and normalize all metadata fields for a package post.
+	 *
+	 * @param int   $post_id  Package post ID.
+	 * @param array $raw_meta Raw meta values.
+	 */
+	public function save_package_meta_fields( $post_id, array $raw_meta ) {
+		$includes_tables = isset( $raw_meta['includes_tables'] ) ? $this->sanitize_table_list( (array) $raw_meta['includes_tables'] ) : array();
+		if ( empty( $includes_tables ) && ! empty( $raw_meta['includes_table'] ) ) {
+			$includes_tables = $this->sanitize_table_list( array( $raw_meta['includes_table'] ) );
+		}
+
+		$gallery_ids = array();
+		if ( isset( $raw_meta['gallery_ids'] ) ) {
+			if ( is_array( $raw_meta['gallery_ids'] ) ) {
+				$gallery_ids = array_values( array_filter( array_map( 'absint', $raw_meta['gallery_ids'] ) ) );
+			} else {
+				$gallery_ids = array_values( array_filter( array_map( 'absint', explode( ',', (string) $raw_meta['gallery_ids'] ) ) ) );
+			}
+		}
+
+		$meta = array(
+			'subtitle'            => isset( $raw_meta['subtitle'] ) ? sanitize_text_field( $raw_meta['subtitle'] ) : '',
+			'card_subtitle'       => isset( $raw_meta['card_subtitle'] ) ? sanitize_text_field( $raw_meta['card_subtitle'] ) : '',
+			'badge_text'          => isset( $raw_meta['badge_text'] ) ? sanitize_text_field( $raw_meta['badge_text'] ) : '',
+			'card_primary_tag'    => isset( $raw_meta['card_primary_tag'] ) ? sanitize_text_field( $raw_meta['card_primary_tag'] ) : '',
+			'card_secondary_tag'  => isset( $raw_meta['card_secondary_tag'] ) ? sanitize_text_field( $raw_meta['card_secondary_tag'] ) : '',
+			'price'               => isset( $raw_meta['price'] ) ? sanitize_text_field( $raw_meta['price'] ) : '',
+			'price_note'          => isset( $raw_meta['price_note'] ) ? sanitize_text_field( $raw_meta['price_note'] ) : '',
+			'price_label'         => isset( $raw_meta['price_label'] ) ? sanitize_text_field( $raw_meta['price_label'] ) : '',
+			'duration'            => isset( $raw_meta['duration'] ) ? sanitize_text_field( $raw_meta['duration'] ) : '',
+			'duration_label'      => isset( $raw_meta['duration_label'] ) ? sanitize_text_field( $raw_meta['duration_label'] ) : '',
+			'nights'              => isset( $raw_meta['nights'] ) ? sanitize_text_field( $raw_meta['nights'] ) : '',
+			'nights_label'        => isset( $raw_meta['nights_label'] ) ? sanitize_text_field( $raw_meta['nights_label'] ) : '',
+			'expiration_date'     => isset( $raw_meta['expiration_date'] ) ? $this->normalize_date_value( $raw_meta['expiration_date'] ) : '',
+			'description_title'   => isset( $raw_meta['description_title'] ) ? sanitize_text_field( $raw_meta['description_title'] ) : '',
+			'description_content' => isset( $raw_meta['description_content'] ) ? wp_kses_post( $raw_meta['description_content'] ) : '',
+			'includes_title'      => isset( $raw_meta['includes_title'] ) ? sanitize_text_field( $raw_meta['includes_title'] ) : '',
+			'includes_content'    => isset( $raw_meta['includes_content'] ) ? wp_kses_post( $raw_meta['includes_content'] ) : '',
+			'includes_table_html' => isset( $raw_meta['includes_table_html'] ) ? wp_kses_post( $raw_meta['includes_table_html'] ) : '',
+			'excludes_title'      => isset( $raw_meta['excludes_title'] ) ? sanitize_text_field( $raw_meta['excludes_title'] ) : '',
+			'excludes_content'    => isset( $raw_meta['excludes_content'] ) ? wp_kses_post( $raw_meta['excludes_content'] ) : '',
+			'general_info_title'  => isset( $raw_meta['general_info_title'] ) ? sanitize_text_field( $raw_meta['general_info_title'] ) : '',
+			'general_info_content'=> isset( $raw_meta['general_info_content'] ) ? wp_kses_post( $raw_meta['general_info_content'] ) : '',
+			'includes_table'      => ! empty( $includes_tables ) ? $includes_tables[0] : '',
+			'includes_tables'     => $includes_tables,
+			'includes_pdf_id'     => isset( $raw_meta['includes_pdf_id'] ) ? absint( $raw_meta['includes_pdf_id'] ) : 0,
+			'gallery_ids'         => $gallery_ids,
+		);
+
+		update_post_meta( $post_id, self::META_KEY, $meta );
+
+		if ( '' !== $meta['expiration_date'] ) {
+			update_post_meta( $post_id, self::EXPIRATION_DATE_META_KEY, $meta['expiration_date'] );
+		} else {
+			delete_post_meta( $post_id, self::EXPIRATION_DATE_META_KEY );
+		}
+
+		$price_numeric = $this->extract_numeric_value( $meta['price'] );
+		$duration_numeric = $this->extract_numeric_value( $meta['duration'] );
+
+		if ( null !== $price_numeric ) {
+			update_post_meta( $post_id, self::PRICE_NUMERIC_META_KEY, $price_numeric );
+		} elseif ( '' !== trim( (string) $meta['price'] ) ) {
+			update_post_meta( $post_id, self::PRICE_NUMERIC_META_KEY, 0 );
+		} else {
+			delete_post_meta( $post_id, self::PRICE_NUMERIC_META_KEY );
+		}
+
+		if ( null !== $duration_numeric ) {
+			update_post_meta( $post_id, self::DURATION_NUMERIC_META_KEY, $duration_numeric );
+		} else {
+			delete_post_meta( $post_id, self::DURATION_NUMERIC_META_KEY );
+		}
+
+		$this->clear_numeric_filter_bounds_cache();
+	}
+
+	/**
+	 * Parse raw JSON string, stripping markdown fences or BOM.
+	 *
+	 * @param string $raw_json Raw JSON string.
+	 * @return array|WP_Error Array of package items or WP_Error.
+	 */
+	public function parse_json_payload( $raw_json ) {
+		if ( ! is_string( $raw_json ) || '' === trim( $raw_json ) ) {
+			return new WP_Error( 'empty_payload', __( 'Please provide valid JSON data.', 'aths-business-packages' ) );
+		}
+
+		$clean = trim( $raw_json );
+		$clean = preg_replace( '/^\xEF\xBB\xBF/', '', $clean );
+
+		if ( preg_match( '/^```(?:json)?\s*([\s\S]*?)\s*```$/i', $clean, $matches ) ) {
+			$clean = trim( $matches[1] );
+		}
+
+		$decoded = json_decode( $clean, true );
+
+		if ( JSON_ERROR_NONE !== json_last_error() ) {
+			/* translators: %s: json_last_error_msg error message */
+			return new WP_Error( 'json_syntax_error', sprintf( __( 'JSON syntax error: %s', 'aths-business-packages' ), json_last_error_msg() ) );
+		}
+
+		if ( ! is_array( $decoded ) ) {
+			return new WP_Error( 'invalid_json_structure', __( 'JSON must contain a package object or a list of package objects.', 'aths-business-packages' ) );
+		}
+
+		if ( isset( $decoded['title'] ) || ( ! empty( $decoded ) && ! isset( $decoded[0] ) ) ) {
+			return array( $decoded );
+		}
+
+		return $decoded;
+	}
+
+	/**
+	 * Import a single package item array into WordPress.
+	 *
+	 * @param array  $item        Package item array.
+	 * @param string $post_status Target post status ('publish' or 'draft').
+	 * @return int|WP_Error Post ID or WP_Error.
+	 */
+	public function import_single_package( array $item, $post_status = 'publish' ) {
+		$title = isset( $item['title'] ) ? trim( (string) $item['title'] ) : '';
+		if ( '' === $title ) {
+			return new WP_Error( 'missing_title', __( 'Each package must have a valid title.', 'aths-business-packages' ) );
+		}
+
+		$status = in_array( $post_status, array( 'publish', 'draft' ), true ) ? $post_status : 'publish';
+
+		$post_id = wp_insert_post(
+			array(
+				'post_title'  => sanitize_text_field( $title ),
+				'post_type'   => self::CPT,
+				'post_status' => $status,
+			),
+			true
+		);
+
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
+		$this->save_package_meta_fields( $post_id, $item );
+
+		if ( ! empty( $item['featured_media_id'] ) ) {
+			set_post_thumbnail( $post_id, absint( $item['featured_media_id'] ) );
+		}
+
+		$tax_map = array(
+			'destinations'       => $this->taxonomy_name_from_slug( 'destination' ),
+			'destination'        => $this->taxonomy_name_from_slug( 'destination' ),
+			'countries'          => $this->taxonomy_name_from_slug( 'country' ),
+			'country'            => $this->taxonomy_name_from_slug( 'country' ),
+			'holidays'           => $this->taxonomy_name_from_slug( 'important-holidays' ),
+			'important_holidays' => $this->taxonomy_name_from_slug( 'important-holidays' ),
+			'important-holidays' => $this->taxonomy_name_from_slug( 'important-holidays' ),
+			'categories'         => $this->taxonomy_name_from_slug( 'travel-style' ),
+			'category'           => $this->taxonomy_name_from_slug( 'travel-style' ),
+			'travel_style'       => $this->taxonomy_name_from_slug( 'travel-style' ),
+			'travel-style'       => $this->taxonomy_name_from_slug( 'travel-style' ),
+		);
+
+		foreach ( $tax_map as $json_key => $tax_name ) {
+			if ( empty( $item[ $json_key ] ) || ! taxonomy_exists( $tax_name ) ) {
+				continue;
+			}
+
+			$raw_terms = is_array( $item[ $json_key ] ) ? $item[ $json_key ] : array( $item[ $json_key ] );
+			$this->assign_terms_to_package( $post_id, $tax_name, $raw_terms );
+		}
+
+		if ( ! empty( $item['taxonomies'] ) && is_array( $item['taxonomies'] ) ) {
+			foreach ( $item['taxonomies'] as $tax_slug => $terms ) {
+				$tax_name = taxonomy_exists( $tax_slug ) ? $tax_slug : $this->taxonomy_name_from_slug( $tax_slug );
+				if ( taxonomy_exists( $tax_name ) && ! empty( $terms ) ) {
+					$raw_terms = is_array( $terms ) ? $terms : array( $terms );
+					$this->assign_terms_to_package( $post_id, $tax_name, $raw_terms );
+				}
+			}
+		}
+
+		return $post_id;
+	}
+
+	/**
+	 * Assign term names or IDs to a package, creating missing terms if needed.
+	 *
+	 * @param int    $post_id  Package post ID.
+	 * @param string $taxonomy Taxonomy identifier.
+	 * @param array  $terms    List of term names or IDs.
+	 */
+	public function assign_terms_to_package( $post_id, $taxonomy, array $terms ) {
+		$term_ids = array();
+
+		foreach ( $terms as $term_val ) {
+			if ( is_numeric( $term_val ) && (int) $term_val > 0 ) {
+				$term_ids[] = (int) $term_val;
+				continue;
+			}
+
+			$term_name = trim( (string) $term_val );
+			if ( '' === $term_name ) {
+				continue;
+			}
+
+			$existing = term_exists( $term_name, $taxonomy );
+			if ( $existing ) {
+				$term_ids[] = is_array( $existing ) ? (int) $existing['term_id'] : (int) $existing;
+			} else {
+				$created = wp_insert_term( $term_name, $taxonomy );
+				if ( ! is_wp_error( $created ) && isset( $created['term_id'] ) ) {
+					$term_ids[] = (int) $created['term_id'];
+				}
+			}
+		}
+
+		if ( ! empty( $term_ids ) ) {
+			wp_set_object_terms( $post_id, array_unique( $term_ids ), $taxonomy, false );
+		}
+	}
+
+	/**
+	 * Import packages from raw JSON payload or array.
+	 *
+	 * @param string|array $payload     JSON string or decoded array.
+	 * @param string       $post_status 'publish' or 'draft'.
+	 * @return array Results summary with 'success', 'count', 'created', 'errors'.
+	 */
+	public function import_packages_from_payload( $payload, $post_status = 'publish' ) {
+		$items = is_array( $payload ) ? $payload : $this->parse_json_payload( $payload );
+
+		if ( is_wp_error( $items ) ) {
+			return array(
+				'success' => false,
+				'count'   => 0,
+				'created' => array(),
+				'errors'  => array( $items->get_error_message() ),
+			);
+		}
+
+		$created = array();
+		$errors  = array();
+
+		foreach ( $items as $index => $item ) {
+			if ( ! is_array( $item ) ) {
+				/* translators: %d: 1-based package item index number */
+				$errors[] = sprintf( __( 'Item #%d is not a valid package object.', 'aths-business-packages' ), $index + 1 );
+				continue;
+			}
+
+			$result = $this->import_single_package( $item, $post_status );
+			if ( is_wp_error( $result ) ) {
+				/* translators: %d: 1-based package item index number */
+				$item_title = ! empty( $item['title'] ) ? $item['title'] : sprintf( __( 'Item #%d', 'aths-business-packages' ), $index + 1 );
+				$errors[]   = sprintf( '%s: %s', $item_title, $result->get_error_message() );
+			} else {
+				$created[] = array(
+					'id'    => $result,
+					'title' => get_the_title( $result ),
+				);
+			}
+		}
+
+		return array(
+			'success' => ! empty( $created ),
+			'count'   => count( $created ),
+			'created' => $created,
+			'errors'  => $errors,
+		);
+	}
 }

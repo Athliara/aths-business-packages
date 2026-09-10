@@ -18,6 +18,8 @@ class ATHSBP_Admin {
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
 		add_action( 'save_post_' . ATHSBP_Plugin::CPT, array( $this, 'save_package_meta' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_action( 'admin_post_athsbp_import_package', array( $this, 'handle_package_import' ) );
+		add_action( 'admin_post_athsbp_download_ai_instructions', array( $this, 'handle_download_ai_instructions' ) );
 	}
 
 	public function register_admin_pages() {
@@ -255,8 +257,34 @@ class ATHSBP_Admin {
 		foreach ( $custom_filter_groups as $index => $group ) {
 			$custom_filter_indexes[ $group['slug'] ] = $index;
 		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Tab navigation parameter in admin screen.
+		$raw_tab    = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general';
+		$active_tab = in_array( $raw_tab, array( 'general', 'styling', 'ai-import' ), true ) ? $raw_tab : 'general';
+
+		$instructions_file_path = ATHSBP_PLUGIN_DIR . 'assets/ai-package-import-instructions.md';
+		$ai_instructions_text   = file_exists( $instructions_file_path )
+			? file_get_contents( $instructions_file_path ) // phpcs:ignore WordPress.WP.AlternativeFileSystemReading.file_get_contents_file_get_contents
+			: '';
+
+		$download_url = wp_nonce_url(
+			admin_url( 'admin-post.php?action=athsbp_download_ai_instructions' ),
+			'athsbp_download_ai_instructions'
+		);
+
+		$transient_key = 'athsbp_import_notice_' . get_current_user_id();
+		$import_notice = get_transient( $transient_key );
+		if ( $import_notice ) {
+			delete_transient( $transient_key );
+		}
 		?>
 		<div class="wrap abp-settings athsbp-settings">
+			<?php if ( ! empty( $import_notice['message'] ) ) : ?>
+				<div class="notice notice-<?php echo esc_attr( $import_notice['type'] ); ?> is-dismissible athsbp-admin-notice">
+					<p><?php echo wp_kses_post( $import_notice['message'] ); ?></p>
+				</div>
+			<?php endif; ?>
+
 			<div class="abp-settings-hero athsbp-settings-hero">
 				<div class="abp-settings-hero-copy athsbp-settings-hero-copy">
 					<span class="abp-settings-kicker athsbp-settings-kicker"><?php esc_html_e( 'Travel Package Builder', 'aths-business-packages' ); ?></span>
@@ -266,6 +294,7 @@ class ATHSBP_Admin {
 						<span><?php esc_html_e( 'Structured editor', 'aths-business-packages' ); ?></span>
 						<span><?php esc_html_e( 'Theme-friendly output', 'aths-business-packages' ); ?></span>
 						<span><?php esc_html_e( 'Flexible filters', 'aths-business-packages' ); ?></span>
+						<span><?php esc_html_e( 'AI Import', 'aths-business-packages' ); ?></span>
 					</div>
 				</div>
 				<div class="abp-settings-hero-panel athsbp-settings-hero-panel">
@@ -276,14 +305,15 @@ class ATHSBP_Admin {
 			</div>
 
 			<nav class="abp-settings-tabs athsbp-settings-tabs" aria-label="<?php esc_attr_e( 'Settings sections', 'aths-business-packages' ); ?>">
-				<button type="button" class="abp-settings-tab athsbp-settings-tab is-active" data-athsbp-settings-tab="general"><?php esc_html_e( 'General Branding', 'aths-business-packages' ); ?></button>
-				<button type="button" class="abp-settings-tab athsbp-settings-tab" data-athsbp-settings-tab="styling"><?php esc_html_e( 'Styling', 'aths-business-packages' ); ?></button>
+				<button type="button" class="abp-settings-tab athsbp-settings-tab <?php echo 'general' === $active_tab ? 'is-active' : ''; ?>" data-athsbp-settings-tab="general"><?php esc_html_e( 'General Branding', 'aths-business-packages' ); ?></button>
+				<button type="button" class="abp-settings-tab athsbp-settings-tab <?php echo 'styling' === $active_tab ? 'is-active' : ''; ?>" data-athsbp-settings-tab="styling"><?php esc_html_e( 'Styling', 'aths-business-packages' ); ?></button>
+				<button type="button" class="abp-settings-tab athsbp-settings-tab <?php echo 'ai-import' === $active_tab ? 'is-active' : ''; ?>" data-athsbp-settings-tab="ai-import"><?php esc_html_e( 'AI Import', 'aths-business-packages' ); ?></button>
 			</nav>
 
-			<form method="post" action="options.php">
+			<form method="post" action="options.php" class="abp-settings-options-form">
 				<?php settings_fields( 'athsbp_settings_group' ); ?>
 
-				<div class="abp-settings-panel athsbp-settings-panel is-active" data-athsbp-settings-panel="general">
+				<div class="abp-settings-panel athsbp-settings-panel <?php echo 'general' === $active_tab ? 'is-active' : ''; ?>" data-athsbp-settings-panel="general">
 				<div class="abp-settings-card athsbp-settings-card">
 					<div class="abp-section-heading">
 						<div>
@@ -384,7 +414,7 @@ class ATHSBP_Admin {
 				</div>
 				</div>
 
-				<div class="abp-settings-panel athsbp-settings-panel" data-athsbp-settings-panel="styling">
+				<div class="abp-settings-panel athsbp-settings-panel <?php echo 'styling' === $active_tab ? 'is-active' : ''; ?>" data-athsbp-settings-panel="styling">
 				<div class="abp-settings-card athsbp-settings-card">
 					<div class="abp-section-heading">
 						<div>
@@ -413,8 +443,83 @@ class ATHSBP_Admin {
 				</div>
 				</div>
 
-				<?php submit_button( __( 'Save Settings', 'aths-business-packages' ) ); ?>
+				<div class="abp-settings-submit-wrap" <?php echo 'ai-import' === $active_tab ? 'style="display:none;"' : ''; ?>>
+					<?php submit_button( __( 'Save Settings', 'aths-business-packages' ) ); ?>
+				</div>
 			</form>
+
+			<div class="abp-settings-panel athsbp-settings-panel <?php echo 'ai-import' === $active_tab ? 'is-active' : ''; ?>" data-athsbp-settings-panel="ai-import">
+				<div class="abp-settings-card athsbp-settings-card">
+					<div class="abp-section-heading">
+						<div>
+							<h2><?php esc_html_e( 'AI Agent Instructions & Prompt', 'aths-business-packages' ); ?></h2>
+							<p><?php esc_html_e( 'Provide these instructions to your AI agent (ChatGPT, Claude, Gemini, etc.) along with your package brochure (PDF, Word document, or flyer) to generate structured JSON ready for import.', 'aths-business-packages' ); ?></p>
+						</div>
+						<div class="abp-heading-actions">
+							<a href="<?php echo esc_url( $download_url ); ?>" class="button button-secondary abp-download-instructions">
+								<span class="dashicons dashicons-download"></span>
+								<?php esc_html_e( 'Download Instructions (.md)', 'aths-business-packages' ); ?>
+							</a>
+							<button type="button" class="button button-secondary abp-copy-instructions" data-copied-text="<?php esc_attr_e( 'Copied!', 'aths-business-packages' ); ?>">
+								<span class="dashicons dashicons-clipboard"></span>
+								<span class="abp-copy-text"><?php esc_html_e( 'Copy Instructions', 'aths-business-packages' ); ?></span>
+							</button>
+						</div>
+					</div>
+
+					<div class="abp-ai-instructions-box">
+						<textarea id="abp-ai-instructions-content" class="widefat abp-instructions-textarea code" rows="12" readonly><?php echo esc_textarea( $ai_instructions_text ); ?></textarea>
+						<p class="description">
+							<?php esc_html_e( 'You can copy the prompt above to paste directly into your AI chat, or download the markdown (.md) file to attach alongside your package document.', 'aths-business-packages' ); ?>
+						</p>
+					</div>
+				</div>
+
+				<div class="abp-settings-card athsbp-settings-card">
+					<div class="abp-section-heading">
+						<div>
+							<h2><?php esc_html_e( 'Import Package(s) from JSON', 'aths-business-packages' ); ?></h2>
+							<p><?php esc_html_e( 'Upload the JSON file generated by the AI agent or paste the JSON content directly below.', 'aths-business-packages' ); ?></p>
+						</div>
+					</div>
+
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data" class="abp-import-form">
+						<input type="hidden" name="action" value="athsbp_import_package">
+						<?php wp_nonce_field( 'athsbp_import_package_action', 'athsbp_import_nonce' ); ?>
+
+						<table class="form-table" role="presentation">
+							<tr>
+								<th scope="row"><label for="abp-import-file"><?php esc_html_e( 'Upload JSON File', 'aths-business-packages' ); ?></label></th>
+								<td>
+									<input type="file" id="abp-import-file" name="athsbp_import_file" accept=".json,application/json">
+									<p class="description"><?php esc_html_e( 'Select a .json file from your computer.', 'aths-business-packages' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="abp-import-json"><?php esc_html_e( 'Or Paste JSON Content', 'aths-business-packages' ); ?></label></th>
+								<td>
+									<textarea id="abp-import-json" name="athsbp_import_json" rows="10" class="large-text code" placeholder="<?php esc_attr_e( '{\n  &quot;title&quot;: &quot;...&quot;\n}', 'aths-business-packages' ); ?>"></textarea>
+									<p class="description"><?php esc_html_e( 'Paste single package JSON or an array of packages. Markdown code blocks (```json ... ```) are automatically cleaned.', 'aths-business-packages' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="abp-import-status"><?php esc_html_e( 'Package Status', 'aths-business-packages' ); ?></label></th>
+								<td>
+									<select id="abp-import-status" name="athsbp_import_status">
+										<option value="publish"><?php esc_html_e( 'Publish Immediately', 'aths-business-packages' ); ?></option>
+										<option value="draft"><?php esc_html_e( 'Save as Draft', 'aths-business-packages' ); ?></option>
+									</select>
+									<p class="description"><?php esc_html_e( 'Choose whether to immediately publish imported packages or keep them as drafts for review.', 'aths-business-packages' ); ?></p>
+								</td>
+							</tr>
+						</table>
+
+						<p class="submit">
+							<button type="submit" name="athsbp_do_import" class="button button-primary"><?php esc_html_e( 'Import Package(s)', 'aths-business-packages' ); ?></button>
+						</p>
+					</form>
+				</div>
+			</div>
 
 			<script type="text/html" id="tmpl-abp-filter-group-row">
 				<?php
@@ -843,72 +948,170 @@ class ATHSBP_Admin {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Package meta is unslashed here and each field is sanitized according to its expected shape below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Package meta is unslashed here and each field is sanitized inside save_package_meta_fields().
 		$raw_meta = isset( $_POST['athsbp_meta'] ) ? wp_unslash( $_POST['athsbp_meta'] ) : array();
 		if ( ! is_array( $raw_meta ) ) {
 			$raw_meta = array();
 		}
 
-		$includes_tables = isset( $raw_meta['includes_tables'] ) ? $this->sanitize_table_list( $raw_meta['includes_tables'] ) : array();
-		if ( empty( $includes_tables ) && ! empty( $raw_meta['includes_table'] ) ) {
-			$includes_tables = $this->sanitize_table_list( array( $raw_meta['includes_table'] ) );
+		$this->plugin->save_package_meta_fields( $post_id, $raw_meta );
+	}
+
+	/**
+	 * Download the AI Agent Instructions markdown file.
+	 */
+	public function handle_download_ai_instructions() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Unauthorized access.', 'aths-business-packages' ) );
 		}
 
-		$meta = array(
-			'subtitle'            => isset( $raw_meta['subtitle'] ) ? sanitize_text_field( $raw_meta['subtitle'] ) : '',
-			'card_subtitle'       => isset( $raw_meta['card_subtitle'] ) ? sanitize_text_field( $raw_meta['card_subtitle'] ) : '',
-			'badge_text'          => isset( $raw_meta['badge_text'] ) ? sanitize_text_field( $raw_meta['badge_text'] ) : '',
-			'card_primary_tag'    => isset( $raw_meta['card_primary_tag'] ) ? sanitize_text_field( $raw_meta['card_primary_tag'] ) : '',
-			'card_secondary_tag'  => isset( $raw_meta['card_secondary_tag'] ) ? sanitize_text_field( $raw_meta['card_secondary_tag'] ) : '',
-			'price'               => isset( $raw_meta['price'] ) ? sanitize_text_field( $raw_meta['price'] ) : '',
-			'price_note'          => isset( $raw_meta['price_note'] ) ? sanitize_text_field( $raw_meta['price_note'] ) : '',
-			'price_label'         => isset( $raw_meta['price_label'] ) ? sanitize_text_field( $raw_meta['price_label'] ) : '',
-			'duration'            => isset( $raw_meta['duration'] ) ? sanitize_text_field( $raw_meta['duration'] ) : '',
-			'duration_label'      => isset( $raw_meta['duration_label'] ) ? sanitize_text_field( $raw_meta['duration_label'] ) : '',
-			'nights'              => isset( $raw_meta['nights'] ) ? sanitize_text_field( $raw_meta['nights'] ) : '',
-			'nights_label'        => isset( $raw_meta['nights_label'] ) ? sanitize_text_field( $raw_meta['nights_label'] ) : '',
-			'expiration_date'     => isset( $raw_meta['expiration_date'] ) ? $this->plugin->normalize_date_value( $raw_meta['expiration_date'] ) : '',
-			'description_title'   => isset( $raw_meta['description_title'] ) ? sanitize_text_field( $raw_meta['description_title'] ) : '',
-			'description_content' => isset( $raw_meta['description_content'] ) ? wp_kses_post( $raw_meta['description_content'] ) : '',
-			'includes_title'      => isset( $raw_meta['includes_title'] ) ? sanitize_text_field( $raw_meta['includes_title'] ) : '',
-			'includes_content'    => isset( $raw_meta['includes_content'] ) ? wp_kses_post( $raw_meta['includes_content'] ) : '',
-			'includes_table_html' => isset( $raw_meta['includes_table_html'] ) ? wp_kses_post( $raw_meta['includes_table_html'] ) : '',
-			'excludes_title'      => isset( $raw_meta['excludes_title'] ) ? sanitize_text_field( $raw_meta['excludes_title'] ) : '',
-			'excludes_content'    => isset( $raw_meta['excludes_content'] ) ? wp_kses_post( $raw_meta['excludes_content'] ) : '',
-			'general_info_title'  => isset( $raw_meta['general_info_title'] ) ? sanitize_text_field( $raw_meta['general_info_title'] ) : '',
-			'general_info_content'=> isset( $raw_meta['general_info_content'] ) ? wp_kses_post( $raw_meta['general_info_content'] ) : '',
-			'includes_table'      => ! empty( $includes_tables ) ? $includes_tables[0] : '',
-			'includes_tables'     => $includes_tables,
-			'includes_pdf_id'     => isset( $raw_meta['includes_pdf_id'] ) ? absint( $raw_meta['includes_pdf_id'] ) : 0,
-			'gallery_ids'         => isset( $raw_meta['gallery_ids'] ) ? array_filter( array_map( 'absint', explode( ',', (string) $raw_meta['gallery_ids'] ) ) ) : array(),
+		if ( empty( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'athsbp_download_ai_instructions' ) ) {
+			wp_die( esc_html__( 'Security check failed.', 'aths-business-packages' ) );
+		}
+
+		$file_path = ATHSBP_PLUGIN_DIR . 'assets/ai-package-import-instructions.md';
+		if ( ! file_exists( $file_path ) ) {
+			wp_die( esc_html__( 'Instructions file not found.', 'aths-business-packages' ) );
+		}
+
+		header( 'Content-Description: File Transfer' );
+		header( 'Content-Type: text/markdown; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="aths-ai-package-instructions.md"' );
+		header( 'Expires: 0' );
+		header( 'Cache-Control: must-revalidate' );
+		header( 'Pragma: public' );
+		header( 'Content-Length: ' . filesize( $file_path ) );
+
+		global $wp_filesystem;
+		if ( empty( $wp_filesystem ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			WP_Filesystem();
+		}
+
+		if ( $wp_filesystem ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Plain text markdown attachment download.
+			echo $wp_filesystem->get_contents( $file_path );
+		}
+		exit;
+	}
+
+	/**
+	 * Handle package import action from settings.
+	 */
+	public function handle_package_import() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Unauthorized access.', 'aths-business-packages' ) );
+		}
+
+		if ( empty( $_POST['athsbp_import_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['athsbp_import_nonce'] ) ), 'athsbp_import_package_action' ) ) {
+			wp_die( esc_html__( 'Security check failed.', 'aths-business-packages' ) );
+		}
+
+		$redirect_url = add_query_arg(
+			array(
+				'page' => 'athsbp-settings',
+				'tab'  => 'ai-import',
+			),
+			admin_url( 'admin.php' )
 		);
 
-		update_post_meta( $post_id, ATHSBP_Plugin::META_KEY, $meta );
+		$raw_json = '';
 
-		if ( '' !== $meta['expiration_date'] ) {
-			update_post_meta( $post_id, ATHSBP_Plugin::EXPIRATION_DATE_META_KEY, $meta['expiration_date'] );
-		} else {
-			delete_post_meta( $post_id, ATHSBP_Plugin::EXPIRATION_DATE_META_KEY );
+		// Check if a file was uploaded.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Inspecting uploaded file presence.
+		if ( ! empty( $_FILES['athsbp_import_file']['name'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Validating upload error code.
+			$file_error = isset( $_FILES['athsbp_import_file']['error'] ) ? (int) $_FILES['athsbp_import_file']['error'] : UPLOAD_ERR_NO_FILE;
+
+			if ( UPLOAD_ERR_OK !== $file_error ) {
+				$this->set_import_notice( 'error', __( 'File upload failed. Please check the file and try again.', 'aths-business-packages' ) );
+				wp_safe_redirect( $redirect_url );
+				exit;
+			}
+
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitizing uploaded filename.
+			$file_name = isset( $_FILES['athsbp_import_file']['name'] ) ? sanitize_file_name( wp_unslash( $_FILES['athsbp_import_file']['name'] ) ) : '';
+			$ext       = strtolower( pathinfo( $file_name, PATHINFO_EXTENSION ) );
+			if ( 'json' !== $ext ) {
+				$this->set_import_notice( 'error', __( 'Invalid file type. Please upload a valid .json file.', 'aths-business-packages' ) );
+				wp_safe_redirect( $redirect_url );
+				exit;
+			}
+
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitizing temporary file path.
+			$tmp_path = isset( $_FILES['athsbp_import_file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['athsbp_import_file']['tmp_name'] ) ) : '';
+			// phpcs:ignore WordPress.WP.AlternativeFileSystemReading.file_get_contents_file_get_contents -- Reading uploaded temporary file.
+			$raw_json = ( $tmp_path && file_exists( $tmp_path ) ) ? file_get_contents( $tmp_path ) : '';
+		} elseif ( ! empty( $_POST['athsbp_import_json'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Raw JSON syntax is validated and sanitized during payload parsing.
+			$raw_json = wp_unslash( $_POST['athsbp_import_json'] );
 		}
 
-		$price_numeric = $this->plugin->extract_numeric_value( $meta['price'] );
-		$duration_numeric = $this->plugin->extract_numeric_value( $meta['duration'] );
-
-		if ( null !== $price_numeric ) {
-			update_post_meta( $post_id, ATHSBP_Plugin::PRICE_NUMERIC_META_KEY, $price_numeric );
-		} elseif ( '' !== trim( (string) $meta['price'] ) ) {
-			update_post_meta( $post_id, ATHSBP_Plugin::PRICE_NUMERIC_META_KEY, 0 );
-		} else {
-			delete_post_meta( $post_id, ATHSBP_Plugin::PRICE_NUMERIC_META_KEY );
+		if ( '' === trim( (string) $raw_json ) ) {
+			$this->set_import_notice( 'error', __( 'Please select a JSON file to upload or paste JSON text.', 'aths-business-packages' ) );
+			wp_safe_redirect( $redirect_url );
+			exit;
 		}
 
-		if ( null !== $duration_numeric ) {
-			update_post_meta( $post_id, ATHSBP_Plugin::DURATION_NUMERIC_META_KEY, $duration_numeric );
+		$post_status = ! empty( $_POST['athsbp_import_status'] ) && in_array( $_POST['athsbp_import_status'], array( 'publish', 'draft' ), true )
+			? sanitize_key( $_POST['athsbp_import_status'] )
+			: 'publish';
+
+		$result = $this->plugin->import_packages_from_payload( $raw_json, $post_status );
+
+		if ( empty( $result['success'] ) ) {
+			$error_msg = ! empty( $result['errors'] )
+				? implode( '<br>', array_map( 'esc_html', $result['errors'] ) )
+				: __( 'Import failed. Please check the JSON format.', 'aths-business-packages' );
+			$this->set_import_notice( 'error', $error_msg );
 		} else {
-			delete_post_meta( $post_id, ATHSBP_Plugin::DURATION_NUMERIC_META_KEY );
+			$links = array();
+			foreach ( $result['created'] as $created_item ) {
+				$links[] = sprintf(
+					'<a href="%s"><strong>%s</strong></a>',
+					esc_url( get_edit_post_link( $created_item['id'] ) ),
+					esc_html( $created_item['title'] )
+				);
+			}
+
+			$success_msg = sprintf(
+				/* translators: 1: number of packages, 2: list of package links */
+				_n(
+					'Successfully imported %1$d package: %2$s',
+					'Successfully imported %1$d packages: %2$s',
+					$result['count'],
+					'aths-business-packages'
+				),
+				$result['count'],
+				implode( ', ', $links )
+			);
+
+			if ( ! empty( $result['errors'] ) ) {
+				$success_msg .= '<br><br><strong>' . esc_html__( 'Warnings on skipped items:', 'aths-business-packages' ) . '</strong><br>' . implode( '<br>', array_map( 'esc_html', $result['errors'] ) );
+			}
+
+			$this->set_import_notice( 'success', $success_msg );
 		}
 
-		$this->plugin->clear_numeric_filter_bounds_cache();
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Set a transient notice for the import action.
+	 *
+	 * @param string $type    'success' or 'error'.
+	 * @param string $message Notice HTML message.
+	 */
+	private function set_import_notice( $type, $message ) {
+		set_transient(
+			'athsbp_import_notice_' . get_current_user_id(),
+			array(
+				'type'    => $type,
+				'message' => $message,
+			),
+			60
+		);
 	}
 
 	private function get_editor_labels() {

@@ -1,0 +1,39 @@
+{
+  "title": "[TEXT - The main package title, e.g. Μαρόκο 9 Ημέρες]",
+  "subtitle": "[TEXT - Subtitle displayed under the title on the single page]",
+  "card_subtitle": "[TEXT - Short subtitle shown on the package card grid, e.g. 9 ημέρες / 7 νύχτες]",
+  "badge_text": "[TEXT - Custom badge text on the card. Leave empty to auto-use Country name]",
+  "card_primary_tag": "[TEXT - Custom first tag on the card. Leave empty to auto-use Holiday term]",
+  "card_secondary_tag": "[TEXT - Custom second tag on the card. Leave empty to auto-use Category term]",
+  "price": "[TEXT - The price, e.g. 1630€]",
+  "price_note": "[TEXT - Note under price, e.g. τελική τιμή ανά άτομο με φόρους]",
+  "duration": "[TEXT - The duration, e.g. 9 ημέρες]",
+  "nights": "[TEXT - Number of nights, e.g. 7 νύχτες]",
+  "expiration_date": "[DATE string in YYYY-MM-DD format - Package automatically hides after this date, e.g. 2026-10-31]",
+  "description_title": "Προορισμός / Περιγραφή",
+  "description_content": "[HTML - The main descriptive daily program / itinerary. Use standard paragraph (<p>), bold (<strong>), and italic (<em>) tags]",
+  "includes_title": "Τι περιλαμβάνεται",
+  "includes_content": "[HTML - List of included services. Must be formatted as an HTML list: <ul><li>Item 1</li><li>Item 2</li></ul>]",
+  "excludes_title": "Τι ΔΕΝ περιλαμβάνεται",
+  "excludes_content": "[HTML - List of excluded services. Must be formatted as an HTML list: <ul><li>Item 1</li><li>Item 2</li></ul>]",
+  "general_info_title": "Γενικές Πληροφορίες",
+  "general_info_content": "[HTML - Flight info, luggage limits, hotel notes, entry requirements, etc.]",
+  "includes_tables": [
+    "Αναχώρηση|Ώρα|Άφιξη\nΑθήνα - Καζαμπλάνκα|09:20|13:05\nΚαζαμπλάνκα - Αθήνα|14:00|17:50"
+  ],
+  "destinations": [
+    "Μαρόκο"
+  ],
+  "countries": [
+    "Μαρόκο"
+  ],
+  "holidays": [
+    "Καλοκαίρι"
+  ],
+  "categories": [
+    "Ομαδικό Ταξίδι"
+  ],
+  "featured_media_id": 0,
+  "gallery_ids": [],
+  "includes_pdf_id": 0
+}

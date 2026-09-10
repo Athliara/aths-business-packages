@@ -327,6 +327,52 @@
 
 		$('.athsbp-settings-panel').removeClass('is-active');
 		$('.athsbp-settings-panel[data-athsbp-settings-panel="' + target + '"]').addClass('is-active');
+
+		if (target === 'ai-import') {
+			$('.abp-settings-submit-wrap').hide();
+		} else {
+			$('.abp-settings-submit-wrap').show();
+		}
+
+		if (window.history && window.history.replaceState) {
+			try {
+				var url = new URL(window.location.href);
+				url.searchParams.set('tab', target);
+				window.history.replaceState({}, '', url.toString());
+			} catch (e) {}
+		}
+	});
+
+	$(document).on('click', '.abp-copy-instructions', function (event) {
+		event.preventDefault();
+
+		var $btn = $(this);
+		var $textarea = $('#abp-ai-instructions-content');
+		var text = $textarea.val() || '';
+		var $textSpan = $btn.find('.abp-copy-text');
+		var originalText = $textSpan.text();
+		var copiedText = $btn.attr('data-copied-text') || 'Copied!';
+
+		function markCopied() {
+			$btn.addClass('is-copied');
+			$textSpan.text(copiedText);
+			setTimeout(function () {
+				$btn.removeClass('is-copied');
+				$textSpan.text(originalText);
+			}, 2200);
+		}
+
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(text).then(markCopied).catch(function () {
+				$textarea.trigger('focus').trigger('select');
+				document.execCommand('copy');
+				markCopied();
+			});
+		} else {
+			$textarea.trigger('focus').trigger('select');
+			document.execCommand('copy');
+			markCopied();
+		}
 	});
 
 	$(document).on('click', '.abp-editor-tab', function () {
