@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.2.18
+Stable tag: 0.2.19
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -25,6 +25,9 @@ Main features:
 * Price and duration range filters.
 * Business-type presets for travel agencies and insurance brokers.
 * Greek and English display-language options for package UI text and seeded travel terms.
+* Native multilingual package translation support with graceful fallback for monolingual sites.
+* One-click AI / automated package translation directly in the package editor.
+* Extensible language synchronization filter (`athsbp_current_language`) compatible with any theme, Polylang, and WPML.
 * Site currency selection with symbol-based display.
 * Shortcode-based archive output for theme builders, Elementor, BeTheme, and standard pages.
 * Custom single-package presentation with gallery, info bar, description sections, manual HTML table content, multiple builder tables, optional PDF display, and similar package suggestions.
@@ -68,8 +71,14 @@ This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
 
+= 0.2.19 =
 
-
+* Added native multilingual support: dedicated Translations (EN) tab in the package editor for titles, subtitles, itineraries, inclusions, exclusions, notes, and tables.
+* Added one-click auto-translation button in the package editor to populate English fields on demand with live progress feedback.
+* Added `athsbp_current_language` filter hook and automatic detection for Polylang and WPML.
+* Added dynamic frontend translation resolution: cards, titles, and single package views automatically display translated fields when in English mode while gracefully falling back to primary content if untranslated.
+* Added `the_title` filter integration for package posts in English mode.
+* Full backward compatibility: zero breaking changes and zero overhead for monolingual setups or third-party themes.
 
 = 0.2.18 =
 

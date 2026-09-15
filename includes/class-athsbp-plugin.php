@@ -63,6 +63,7 @@ class ATHSBP_Plugin {
 		add_action( 'template_redirect', array( $this, 'render_package_pretty_url_directly' ), 0 );
 		add_filter( 'template_include', array( $this, 'load_templates' ) );
 		add_filter( 'enter_title_here', array( $this, 'filter_title_placeholder' ), 10, 2 );
+		add_filter( 'the_title', array( $this, 'filter_package_title' ), 10, 2 );
 		add_filter( 'plugin_action_links_' . plugin_basename( ATHSBP_PLUGIN_FILE ), array( $this, 'add_plugin_action_links' ) );
 	}
 
@@ -586,7 +587,32 @@ class ATHSBP_Plugin {
 		$settings = $this->get_settings();
 		$language = isset( $settings['language'] ) ? $settings['language'] : 'el';
 
-		return array_key_exists( $language, $this->get_language_options() ) ? $language : 'el';
+		if ( ! array_key_exists( $language, $this->get_language_options() ) ) {
+			$language = 'el';
+		}
+
+		// Auto-detect Polylang if active
+		if ( function_exists( 'pll_current_language' ) ) {
+			$pll_lang = pll_current_language( 'slug' );
+			if ( ! empty( $pll_lang ) && array_key_exists( $pll_lang, $this->get_language_options() ) ) {
+				$language = $pll_lang;
+			}
+		} elseif ( defined( 'ICL_LANGUAGE_CODE' ) && ! empty( ICL_LANGUAGE_CODE ) && array_key_exists( ICL_LANGUAGE_CODE, $this->get_language_options() ) ) {
+			$language = ICL_LANGUAGE_CODE;
+		} elseif ( has_filter( 'wpml_current_language' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Third-party WPML filter hook.
+			$wpml_lang = apply_filters( 'wpml_current_language', null );
+			if ( ! empty( $wpml_lang ) && array_key_exists( $wpml_lang, $this->get_language_options() ) ) {
+				$language = $wpml_lang;
+			}
+		}
+
+		/**
+		 * Filters the active language used by Aths Business Packages.
+		 *
+		 * @param string $language Current language code ('el' or 'en').
+		 */
+		return (string) apply_filters( 'athsbp_current_language', $language );
 	}
 
 	public function get_frontend() {
@@ -684,32 +710,49 @@ class ATHSBP_Plugin {
 	public function get_package_meta( $post_id ) {
 		$labels = $this->get_ui_labels();
 		$defaults = array(
-			'subtitle'            => '',
-			'card_subtitle'       => '',
-			'badge_text'          => '',
-			'card_primary_tag'    => '',
-			'card_secondary_tag'  => '',
-			'price'               => '',
-			'price_note'          => '',
-			'price_label'         => $labels['price_label'],
-			'duration'            => '',
-			'duration_label'      => $labels['duration_label'],
-			'nights'              => '',
-			'nights_label'        => $labels['nights_label'],
-			'expiration_date'     => '',
-			'description_title'   => $labels['description'],
-			'description_content' => '',
-			'includes_title'      => $labels['whats_included'],
-			'includes_content'    => '',
-			'includes_table_html' => '',
-			'excludes_title'      => $labels['whats_not_included'],
-			'excludes_content'    => '',
-			'general_info_title'  => $labels['general_info'],
-			'general_info_content'=> '',
-			'includes_table'      => '',
-			'includes_tables'     => array(),
-			'includes_pdf_id'     => 0,
-			'gallery_ids'         => array(),
+			'subtitle'                => '',
+			'card_subtitle'           => '',
+			'badge_text'              => '',
+			'card_primary_tag'        => '',
+			'card_secondary_tag'      => '',
+			'price'                   => '',
+			'price_note'              => '',
+			'price_label'             => $labels['price_label'],
+			'duration'                => '',
+			'duration_label'          => $labels['duration_label'],
+			'nights'                  => '',
+			'nights_label'            => $labels['nights_label'],
+			'expiration_date'         => '',
+			'description_title'       => $labels['description'],
+			'description_content'     => '',
+			'includes_title'          => $labels['whats_included'],
+			'includes_content'        => '',
+			'includes_table_html'     => '',
+			'excludes_title'          => $labels['whats_not_included'],
+			'excludes_content'        => '',
+			'general_info_title'      => $labels['general_info'],
+			'general_info_content'    => '',
+			'includes_table'          => '',
+			'includes_tables'         => array(),
+			'includes_pdf_id'         => 0,
+			'gallery_ids'             => array(),
+			'title_en'                => '',
+			'subtitle_en'             => '',
+			'card_subtitle_en'        => '',
+			'badge_text_en'           => '',
+			'price_note_en'           => '',
+			'duration_en'             => '',
+			'nights_en'               => '',
+			'description_title_en'    => '',
+			'description_content_en'  => '',
+			'includes_title_en'       => '',
+			'includes_content_en'     => '',
+			'includes_table_html_en'  => '',
+			'excludes_title_en'       => '',
+			'excludes_content_en'     => '',
+			'general_info_title_en'   => '',
+			'general_info_content_en' => '',
+			'includes_tables_en'      => array(),
 		);
 
 		$meta = get_post_meta( $post_id, self::META_KEY, true );
@@ -760,9 +803,81 @@ class ATHSBP_Plugin {
 			$meta['includes_tables'] = array( $meta['includes_table'] );
 		}
 
+		if ( ! is_array( $meta['includes_tables_en'] ) ) {
+			$meta['includes_tables_en'] = array();
+		}
+
+		$meta['includes_tables_en'] = array_values(
+			array_filter(
+				array_map(
+					function ( $table ) {
+						return is_string( $table ) ? trim( $table ) : '';
+					},
+					$meta['includes_tables_en']
+				)
+			)
+		);
+
 		$meta['includes_pdf_id'] = absint( $meta['includes_pdf_id'] );
 
-		return $meta;
+		// Dynamic multi-language resolution on frontend
+		$current_lang = $this->get_current_language();
+		if ( 'en' === $current_lang && ! is_admin() ) {
+			$en_override_fields = array(
+				'subtitle',
+				'card_subtitle',
+				'badge_text',
+				'price_note',
+				'duration',
+				'nights',
+				'description_title',
+				'description_content',
+				'includes_title',
+				'includes_content',
+				'includes_table_html',
+				'excludes_title',
+				'excludes_content',
+				'general_info_title',
+				'general_info_content',
+			);
+
+			foreach ( $en_override_fields as $field ) {
+				$en_key = $field . '_en';
+				if ( ! empty( $meta[ $en_key ] ) && '' !== trim( (string) $meta[ $en_key ] ) ) {
+					$meta[ $field ] = $meta[ $en_key ];
+				}
+			}
+
+			if ( ! empty( $meta['includes_tables_en'] ) ) {
+				$meta['includes_tables'] = $meta['includes_tables_en'];
+			}
+		}
+
+		/**
+		 * Filter the resolved package meta array.
+		 *
+		 * @param array  $meta             Package meta array.
+		 * @param int    $post_id          Post ID.
+		 * @param string $current_language Active language ('el' or 'en').
+		 */
+		return apply_filters( 'athsbp_package_meta', $meta, $post_id, $current_lang );
+	}
+
+	public function filter_package_title( $title, $post_id = 0 ) {
+		if ( is_admin() || 'en' !== $this->get_current_language() ) {
+			return $title;
+		}
+
+		if ( ! $post_id || self::CPT !== get_post_type( $post_id ) ) {
+			return $title;
+		}
+
+		$meta = get_post_meta( $post_id, self::META_KEY, true );
+		if ( is_array( $meta ) && ! empty( $meta['title_en'] ) && '' !== trim( (string) $meta['title_en'] ) ) {
+			return $meta['title_en'];
+		}
+
+		return $title;
 	}
 
 	public function get_localized_setting( $key ) {
@@ -1752,6 +1867,17 @@ class ATHSBP_Plugin {
 			}
 		}
 
+		$includes_tables_en = array();
+		if ( isset( $raw_meta['includes_tables_en_raw'] ) ) {
+			$raw_text = (string) $raw_meta['includes_tables_en_raw'];
+			if ( '' !== trim( $raw_text ) ) {
+				$blocks = preg_split( '/\n\s*---\s*\n/', $raw_text );
+				$includes_tables_en = $this->sanitize_table_list( (array) $blocks );
+			}
+		} elseif ( isset( $raw_meta['includes_tables_en'] ) ) {
+			$includes_tables_en = $this->sanitize_table_list( (array) $raw_meta['includes_tables_en'] );
+		}
+
 		$meta = array(
 			'subtitle'            => isset( $raw_meta['subtitle'] ) ? sanitize_text_field( $raw_meta['subtitle'] ) : '',
 			'card_subtitle'       => isset( $raw_meta['card_subtitle'] ) ? sanitize_text_field( $raw_meta['card_subtitle'] ) : '',
@@ -1779,6 +1905,23 @@ class ATHSBP_Plugin {
 			'includes_tables'     => $includes_tables,
 			'includes_pdf_id'     => isset( $raw_meta['includes_pdf_id'] ) ? absint( $raw_meta['includes_pdf_id'] ) : 0,
 			'gallery_ids'         => $gallery_ids,
+			'title_en'                => isset( $raw_meta['title_en'] ) ? sanitize_text_field( $raw_meta['title_en'] ) : '',
+			'subtitle_en'             => isset( $raw_meta['subtitle_en'] ) ? sanitize_text_field( $raw_meta['subtitle_en'] ) : '',
+			'card_subtitle_en'        => isset( $raw_meta['card_subtitle_en'] ) ? sanitize_text_field( $raw_meta['card_subtitle_en'] ) : '',
+			'badge_text_en'           => isset( $raw_meta['badge_text_en'] ) ? sanitize_text_field( $raw_meta['badge_text_en'] ) : '',
+			'price_note_en'           => isset( $raw_meta['price_note_en'] ) ? sanitize_text_field( $raw_meta['price_note_en'] ) : '',
+			'duration_en'             => isset( $raw_meta['duration_en'] ) ? sanitize_text_field( $raw_meta['duration_en'] ) : '',
+			'nights_en'               => isset( $raw_meta['nights_en'] ) ? sanitize_text_field( $raw_meta['nights_en'] ) : '',
+			'description_title_en'    => isset( $raw_meta['description_title_en'] ) ? sanitize_text_field( $raw_meta['description_title_en'] ) : '',
+			'description_content_en'  => isset( $raw_meta['description_content_en'] ) ? wp_kses_post( $raw_meta['description_content_en'] ) : '',
+			'includes_title_en'       => isset( $raw_meta['includes_title_en'] ) ? sanitize_text_field( $raw_meta['includes_title_en'] ) : '',
+			'includes_content_en'     => isset( $raw_meta['includes_content_en'] ) ? wp_kses_post( $raw_meta['includes_content_en'] ) : '',
+			'includes_table_html_en'  => isset( $raw_meta['includes_table_html_en'] ) ? wp_kses_post( $raw_meta['includes_table_html_en'] ) : '',
+			'excludes_title_en'       => isset( $raw_meta['excludes_title_en'] ) ? sanitize_text_field( $raw_meta['excludes_title_en'] ) : '',
+			'excludes_content_en'     => isset( $raw_meta['excludes_content_en'] ) ? wp_kses_post( $raw_meta['excludes_content_en'] ) : '',
+			'general_info_title_en'   => isset( $raw_meta['general_info_title_en'] ) ? sanitize_text_field( $raw_meta['general_info_title_en'] ) : '',
+			'general_info_content_en' => isset( $raw_meta['general_info_content_en'] ) ? wp_kses_post( $raw_meta['general_info_content_en'] ) : '',
+			'includes_tables_en'      => $includes_tables_en,
 		);
 
 		update_post_meta( $post_id, self::META_KEY, $meta );
@@ -1807,6 +1950,131 @@ class ATHSBP_Plugin {
 		}
 
 		$this->clear_numeric_filter_bounds_cache();
+	}
+
+	/**
+	 * Translate text using Google translate API with MyMemory fallback.
+	 *
+	 * @param string $text Text to translate.
+	 * @param string $from Source language code.
+	/**
+	 * Translate a single clean text string (no HTML tags, no leading/trailing newlines).
+	 *
+	 * @param string $text Text to translate.
+	 * @param string $from Source language.
+	 * @param string $to   Target language.
+	 * @return string Translated text.
+	 */
+	public function translate_clean_text( $text, $from = 'el', $to = 'en' ) {
+		$stripped = trim( (string) $text );
+		if ( '' === $stripped ) {
+			return $text;
+		}
+
+		// If string contains no letters, return as-is (e.g. numbers, symbols)
+		if ( ! preg_match( '/[\p{L}]/u', $stripped ) ) {
+			return $text;
+		}
+
+		// Handle very long single text blocks by splitting on sentence punctuation
+		if ( mb_strlen( $stripped ) > 800 ) {
+			$sentences       = preg_split( '/([.?!;]\s+)/u', $stripped, -1, PREG_SPLIT_DELIM_CAPTURE );
+			$trans_sentences = array();
+			foreach ( $sentences as $s ) {
+				$trans_sentences[] = $this->translate_clean_text( $s, $from, $to );
+			}
+			$translated = implode( '', $trans_sentences );
+		} else {
+			// Engine 1: Google clients5 dict-chrome-ex (fast, no rate-limit)
+			$url      = 'https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=' . rawurlencode( $from ) . '&tl=' . rawurlencode( $to ) . '&q=' . rawurlencode( $stripped );
+			$response = wp_remote_get(
+				$url,
+				array(
+					'timeout'    => 15,
+					'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+				)
+			);
+
+			$translated = '';
+			if ( ! is_wp_error( $response ) ) {
+				$body = wp_remote_retrieve_body( $response );
+				$data = json_decode( $body, true );
+				if ( is_array( $data ) && isset( $data[0] ) ) {
+					$translated = is_array( $data[0] ) ? implode( ' ', $data[0] ) : (string) $data[0];
+				}
+			}
+
+			// Engine 2 fallback: MyMemory API
+			if ( empty( trim( $translated ) ) ) {
+				$url2 = 'https://api.mymemory.translated.net/get?q=' . rawurlencode( mb_substr( $stripped, 0, 500 ) ) . '&langpair=' . rawurlencode( $from ) . '|' . rawurlencode( $to );
+				$res2 = wp_remote_get( $url2, array( 'timeout' => 10 ) );
+				if ( ! is_wp_error( $res2 ) ) {
+					$body2 = wp_remote_retrieve_body( $res2 );
+					$data2 = json_decode( $body2, true );
+					if ( ! empty( $data2['responseData']['translatedText'] ) ) {
+						$translated = html_entity_decode( (string) $data2['responseData']['translatedText'], ENT_QUOTES, 'UTF-8' );
+					}
+				}
+			}
+
+			if ( empty( trim( $translated ) ) ) {
+				$translated = $stripped;
+			}
+		}
+
+		// Reattach leading and trailing whitespace exactly as in original
+		preg_match( '/^\s*/u', $text, $leading_m );
+		preg_match( '/\s*$/u', $text, $trailing_m );
+		$leading  = $leading_m[0] ?? '';
+		$trailing = $trailing_m[0] ?? '';
+
+		return $leading . trim( $translated ) . $trailing;
+	}
+
+	/**
+	 * Translate HTML or plain text while preserving 100% of HTML structure, tags, and line breaks.
+	 *
+	 * @param string $content HTML or plain text content.
+	 * @param string $from    Source language.
+	 * @param string $to      Target language.
+	 * @return string Translated content with identical HTML structure and line breaks.
+	 */
+	public function auto_translate_text( $content, $from = 'el', $to = 'en' ) {
+		if ( empty( trim( (string) $content ) ) ) {
+			return $content;
+		}
+
+		// Split by HTML tags
+		$tokens            = preg_split( '/(<[^>]+>)/u', $content, -1, PREG_SPLIT_DELIM_CAPTURE );
+		$translated_tokens = array();
+
+		foreach ( $tokens as $token ) {
+			if ( '' === $token ) {
+				continue;
+			}
+			// If token is an HTML tag, keep it completely untouched
+			if ( '<' === $token[0] && '>' === substr( $token, -1 ) ) {
+				$translated_tokens[] = $token;
+			} else {
+				// Token is text outside/between tags. Split by newlines to preserve exact line spacing
+				$lines = preg_split( '/(\r\n|\n)/u', $token, -1, PREG_SPLIT_DELIM_CAPTURE );
+				foreach ( $lines as $line ) {
+					if ( "\r\n" === $line || "\n" === $line || '' === trim( $line ) ) {
+						$translated_tokens[] = $line;
+					} else {
+						$translated_tokens[] = $this->translate_clean_text( $line, $from, $to );
+					}
+				}
+			}
+		}
+
+		$result = implode( '', $translated_tokens );
+
+		// Clean up any empty <li></li> and extra list bullets
+		$result = preg_replace( '/<li>\s*<\/li>/ui', '', $result );
+		$result = preg_replace( '/<ul>\s*<li>\s*(?=<li>)/ui', '<ul>', $result );
+
+		return $result;
 	}
 
 	/**

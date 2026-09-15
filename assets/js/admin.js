@@ -500,4 +500,68 @@
 		container.find('.abp-pdf-input').val('');
 		container.find('.abp-pdf-preview').empty();
 	});
+
+	function setEditorValue(editorId, content) {
+		if (typeof tinyMCE !== 'undefined' && tinyMCE.get(editorId) && !tinyMCE.get(editorId).isHidden()) {
+			tinyMCE.get(editorId).setContent(content || '');
+		} else {
+			$('#' + editorId).val(content || '');
+		}
+	}
+
+	$(document).on('click', '#athsbp-auto-translate-btn', function (event) {
+		event.preventDefault();
+
+		var $btn = $(this);
+		var $spinner = $('#athsbp-translate-spinner');
+		var postId = $btn.data('post-id');
+
+		if (!postId) {
+			alert(athsbpAdmin.saveFirstNotice || 'Please save the package first.');
+			return;
+		}
+
+		$btn.prop('disabled', true);
+		$spinner.addClass('is-active');
+
+		$.ajax({
+			url: ajaxurl,
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				action: 'athsbp_auto_translate_package',
+				post_id: postId,
+				nonce: athsbpAdmin.translateNonce
+			}
+		}).done(function (response) {
+			if (response && response.success && response.data) {
+				var data = response.data;
+				if (typeof data.title_en !== 'undefined') $('#abp-title-en').val(data.title_en);
+				if (typeof data.subtitle_en !== 'undefined') $('#abp-subtitle-en').val(data.subtitle_en);
+				if (typeof data.card_subtitle_en !== 'undefined') $('#abp-card-subtitle-en').val(data.card_subtitle_en);
+				if (typeof data.badge_text_en !== 'undefined') $('#abp-badge-text-en').val(data.badge_text_en);
+				if (typeof data.duration_en !== 'undefined') $('#abp-duration-en').val(data.duration_en);
+				if (typeof data.nights_en !== 'undefined') $('#abp-nights-en').val(data.nights_en);
+				if (typeof data.price_note_en !== 'undefined') $('#abp-price-note-en').val(data.price_note_en);
+
+				setEditorValue('abp_description_content_en', data.description_content_en);
+				setEditorValue('abp_includes_content_en', data.includes_content_en);
+				setEditorValue('abp_excludes_content_en', data.excludes_content_en);
+				setEditorValue('abp_general_info_content_en', data.general_info_content_en);
+
+				if (typeof data.includes_tables_en_raw !== 'undefined') {
+					$('#abp-includes-tables-en').val(data.includes_tables_en_raw);
+				}
+
+				alert(athsbpAdmin.translateSuccess || 'Translation completed successfully!');
+			} else {
+				alert(response && response.data ? response.data : (athsbpAdmin.translateFailed || 'Translation failed.'));
+			}
+		}).fail(function () {
+			alert(athsbpAdmin.translateFailed || 'Server error during translation.');
+		}).always(function () {
+			$btn.prop('disabled', false);
+			$spinner.removeClass('is-active');
+		});
+	});
 })(jQuery);

@@ -2,10 +2,14 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.2.18`
+Current version: `0.2.19`
 
 ## What this version includes
 
+- Native multilingual translation support with seamless language switching and graceful fallback for monolingual setups
+- Dedicated `Translations (EN)` tab in the package editor for titles, subtitles, itineraries, inclusions, exclusions, notes, and tables
+- One-click auto-translation in the package editor with real-time UI population
+- Extensible `athsbp_current_language` filter hook with auto-detection for Polylang and WPML
 - Custom post type for packages
 - Predefined travel filter groups plus unlimited extra custom filter groups
 - Drag-and-drop filter display ordering, including predefined and extra filters

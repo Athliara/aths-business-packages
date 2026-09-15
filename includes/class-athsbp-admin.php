@@ -20,6 +20,7 @@ class ATHSBP_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_post_athsbp_import_package', array( $this, 'handle_package_import' ) );
 		add_action( 'admin_post_athsbp_download_ai_instructions', array( $this, 'handle_download_ai_instructions' ) );
+		add_action( 'wp_ajax_athsbp_auto_translate_package', array( $this, 'ajax_auto_translate_package' ) );
 	}
 
 	public function register_admin_pages() {
@@ -236,6 +237,10 @@ class ATHSBP_Admin {
 				'cellPlaceholder' => $editor_labels['cell_content'],
 				'columnTitlePlaceholder' => $editor_labels['column_title'],
 				'rowTitlePlaceholder'    => $editor_labels['row_title'],
+				'translateNonce'         => wp_create_nonce( 'athsbp_translate_nonce' ),
+				'saveFirstNotice'        => 'el' === $this->plugin->get_current_language() ? 'Αποθηκεύστε ή δημοσιεύστε πρώτα το πακέτο για να είναι διαθέσιμα τα βασικά κείμενα.' : 'Please save or publish the package first so that primary texts are available.',
+				'translateSuccess'       => 'el' === $this->plugin->get_current_language() ? 'Η μετάφραση ολοκληρώθηκε επιτυχώς! Ελέγξτε τα πεδία και πατήστε Ενημέρωση/Δημοσίευση.' : 'Translation completed successfully! Please review the fields and update/publish your package.',
+				'translateFailed'        => 'el' === $this->plugin->get_current_language() ? 'Η μετάφραση απέτυχε. Δοκιμάστε ξανά.' : 'Translation failed. Please try again.',
 			)
 		);
 	}
@@ -623,6 +628,7 @@ class ATHSBP_Admin {
 			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="general_info"><?php echo esc_html( $labels['general_info_section'] ); ?></button>
 			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="tables"><?php echo esc_html( $labels['tables_section'] ); ?></button>
 			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="pdf"><?php echo esc_html( $labels['pdf_section'] ); ?></button>
+			<button type="button" class="abp-editor-tab" data-athsbp-editor-tab="translations">🌐 <?php echo esc_html( $labels['translations'] ); ?></button>
 		</nav>
 
 		<div class="abp-editor-panel athsbp-editor-panel is-active" data-athsbp-editor-panel="basic">
@@ -867,6 +873,131 @@ class ATHSBP_Admin {
 						<button type="button" class="button button-secondary abp-select-pdf"><?php echo esc_html( $labels['choose_pdf'] ); ?></button>
 						<button type="button" class="button-link-delete abp-clear-pdf"><?php echo esc_html( $labels['clear_pdf'] ); ?></button>
 					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="abp-editor-panel athsbp-editor-panel" data-athsbp-editor-panel="translations">
+			<div class="abp-meta-section">
+				<div class="abp-meta-section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+					<div>
+						<h4><?php echo esc_html( $labels['translations'] ); ?></h4>
+						<p><?php echo esc_html( $labels['translations_desc'] ); ?></p>
+					</div>
+					<div>
+						<button type="button" class="button button-primary" id="athsbp-auto-translate-btn" data-post-id="<?php echo esc_attr( $post->ID ); ?>">
+							<?php echo esc_html( $labels['auto_translate_btn'] ); ?>
+						</button>
+						<span id="athsbp-translate-spinner" class="spinner" style="float: none; margin-top: 0; vertical-align: middle;"></span>
+					</div>
+				</div>
+
+				<div class="abp-meta-grid">
+					<div class="abp-field">
+						<label for="abp-title-en"><?php echo esc_html( $labels['title_en'] ); ?></label>
+						<input id="abp-title-en" type="text" name="athsbp_meta[title_en]" value="<?php echo esc_attr( $meta['title_en'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-subtitle-en"><?php echo esc_html( $labels['subtitle_en'] ); ?></label>
+						<input id="abp-subtitle-en" type="text" name="athsbp_meta[subtitle_en]" value="<?php echo esc_attr( $meta['subtitle_en'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-card-subtitle-en"><?php echo esc_html( $labels['card_subtitle_en'] ); ?></label>
+						<input id="abp-card-subtitle-en" type="text" name="athsbp_meta[card_subtitle_en]" value="<?php echo esc_attr( $meta['card_subtitle_en'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-badge-text-en"><?php echo esc_html( $labels['badge_text_en'] ); ?></label>
+						<input id="abp-badge-text-en" type="text" name="athsbp_meta[badge_text_en]" value="<?php echo esc_attr( $meta['badge_text_en'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-duration-en"><?php echo esc_html( $labels['duration_en'] ); ?></label>
+						<input id="abp-duration-en" type="text" name="athsbp_meta[duration_en]" value="<?php echo esc_attr( $meta['duration_en'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-nights-en"><?php echo esc_html( $labels['nights_en'] ); ?></label>
+						<input id="abp-nights-en" type="text" name="athsbp_meta[nights_en]" value="<?php echo esc_attr( $meta['nights_en'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-price-note-en"><?php echo esc_html( $labels['price_note_en'] ); ?></label>
+						<input id="abp-price-note-en" type="text" name="athsbp_meta[price_note_en]" value="<?php echo esc_attr( $meta['price_note_en'] ); ?>" class="widefat">
+					</div>
+				</div>
+
+				<div class="abp-field" style="margin-top: 20px;">
+					<label for="abp-description-content-en"><strong><?php echo esc_html( $labels['description_en'] ); ?></strong></label>
+					<?php
+					wp_editor(
+						$meta['description_content_en'],
+						'abp_description_content_en',
+						array(
+							'textarea_name' => 'athsbp_meta[description_content_en]',
+							'textarea_rows' => 10,
+							'media_buttons' => true,
+							'teeny'         => false,
+							'quicktags'     => true,
+						)
+					);
+					?>
+				</div>
+
+				<div class="abp-field" style="margin-top: 20px;">
+					<label for="abp-includes-content-en"><strong><?php echo esc_html( $labels['includes_en'] ); ?></strong></label>
+					<?php
+					wp_editor(
+						$meta['includes_content_en'],
+						'abp_includes_content_en',
+						array(
+							'textarea_name' => 'athsbp_meta[includes_content_en]',
+							'textarea_rows' => 8,
+							'media_buttons' => false,
+							'teeny'         => true,
+							'quicktags'     => true,
+						)
+					);
+					?>
+				</div>
+
+				<div class="abp-field" style="margin-top: 20px;">
+					<label for="abp-excludes-content-en"><strong><?php echo esc_html( $labels['excludes_en'] ); ?></strong></label>
+					<?php
+					wp_editor(
+						$meta['excludes_content_en'],
+						'abp_excludes_content_en',
+						array(
+							'textarea_name' => 'athsbp_meta[excludes_content_en]',
+							'textarea_rows' => 8,
+							'media_buttons' => false,
+							'teeny'         => true,
+							'quicktags'     => true,
+						)
+					);
+					?>
+				</div>
+
+				<div class="abp-field" style="margin-top: 20px;">
+					<label for="abp-general-info-content-en"><strong><?php echo esc_html( $labels['general_info_en'] ); ?></strong></label>
+					<?php
+					wp_editor(
+						$meta['general_info_content_en'],
+						'abp_general_info_content_en',
+						array(
+							'textarea_name' => 'athsbp_meta[general_info_content_en]',
+							'textarea_rows' => 8,
+							'media_buttons' => false,
+							'teeny'         => true,
+							'quicktags'     => true,
+						)
+					);
+					?>
+				</div>
+
+				<div class="abp-field" style="margin-top: 20px;">
+					<label for="abp-includes-tables-en"><strong><?php echo esc_html( $labels['tables_en'] ); ?></strong></label>
+					<p class="description"><?php echo esc_html( $labels['tables_en_desc'] ); ?></p>
+					<?php
+					$tables_en_text = ! empty( $meta['includes_tables_en'] ) && is_array( $meta['includes_tables_en'] ) ? implode( "\n\n---\n\n", $meta['includes_tables_en'] ) : '';
+					?>
+					<textarea id="abp-includes-tables-en" name="athsbp_meta[includes_tables_en_raw]" rows="6" class="widefat" placeholder="10/12/2026 – 14/12/2026 | Double/Triple | 860€ / person&#10;Taxes | 195€ (airports, check-in, luggage) | 195€"><?php echo esc_textarea( $tables_en_text ); ?></textarea>
 				</div>
 			</div>
 		</div>
@@ -1189,6 +1320,22 @@ class ATHSBP_Admin {
 				'cell_content'              => 'Περιεχόμενο κελιού',
 				'column_title'              => 'Τίτλος στήλης',
 				'row_title'                 => 'Τίτλος γραμμής',
+				'translations'              => 'Μεταφράσεις (EN)',
+				'translations_desc'         => 'Ορίστε τα αντίστοιχα κείμενα στα Αγγλικά για το πακέτο. Όσα πεδία μείνουν κενά, θα χρησιμοποιούν αυτόματα το ελληνικό περιεχόμενο.',
+				'auto_translate_btn'        => '⚡ Αυτόματη Μετάφραση στα Αγγλικά',
+				'title_en'                  => 'Τίτλος Πακέτου (Αγγλικά)',
+				'subtitle_en'               => 'Υπότιτλος (Αγγλικά)',
+				'card_subtitle_en'          => 'Υπότιτλος Κάρτας (Αγγλικά)',
+				'badge_text_en'             => 'Ετικέτα / Badge Εικόνας (Αγγλικά)',
+				'duration_en'               => 'Τιμή Διάρκειας (Αγγλικά, π.χ. 5 days)',
+				'nights_en'                 => 'Τιμή Διανυκτερεύσεων (Αγγλικά, π.χ. 4 nights)',
+				'price_note_en'             => 'Σημείωση Τιμής (Αγγλικά)',
+				'description_en'            => 'Περιγραφή & Αναλυτικό Πρόγραμμα (Αγγλικά)',
+				'includes_en'               => 'Περιλαμβάνονται (Αγγλικά)',
+				'excludes_en'               => 'Δεν Περιλαμβάνονται (Αγγλικά)',
+				'general_info_en'           => 'Γενικές Πληροφορίες (Αγγλικά)',
+				'tables_en'                 => 'Πίνακες Πακέτου (Αγγλικά)',
+				'tables_en_desc'            => 'Ένας πίνακας ανά ενότητα. Οι στήλες χωρίζονται με | και κάθε γραμμή αντιστοιχεί σε μία σειρά του πίνακα. Χρησιμοποιήστε --- για διαχωρισμό πολλαπλών πινάκων.',
 			);
 		}
 
@@ -1264,6 +1411,84 @@ class ATHSBP_Admin {
 			'cell_content'              => 'Cell content',
 			'column_title'              => 'Column title',
 			'row_title'                 => 'Row title',
+			'translations'              => 'Translations (EN)',
+			'translations_desc'         => 'Define English texts for this package. Any field left blank will gracefully fall back to the primary content.',
+			'auto_translate_btn'        => '⚡ Auto-Translate to English',
+			'title_en'                  => 'Package Title (English)',
+			'subtitle_en'               => 'Subtitle (English)',
+			'card_subtitle_en'          => 'Card Subtitle (English)',
+			'badge_text_en'             => 'Image Badge (English)',
+			'duration_en'               => 'Duration (English, e.g. 5 days)',
+			'nights_en'                 => 'Nights (English, e.g. 4 nights)',
+			'price_note_en'             => 'Price Note (English)',
+			'description_en'            => 'Description & Itinerary (English)',
+			'includes_en'               => 'What\'s Included (English)',
+			'excludes_en'               => 'What\'s Not Included (English)',
+			'general_info_en'           => 'General Information (English)',
+			'tables_en'                 => 'Package Tables (English)',
+			'tables_en_desc'            => 'One table per section. Columns separated by | and each line represents a row. Use --- to separate multiple tables.',
 		);
+	}
+
+	/**
+	 * AJAX action to auto-translate package fields from primary language to English.
+	 */
+	public function ajax_auto_translate_package() {
+		check_ajax_referer( 'athsbp_translate_nonce', 'nonce' );
+
+		$post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
+		if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) ) {
+			wp_send_json_error( __( 'Unauthorized access.', 'aths-business-packages' ) );
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			wp_send_json_error( __( 'Package not found.', 'aths-business-packages' ) );
+		}
+
+		$meta = $this->plugin->get_package_meta( $post_id );
+
+		$translated = array(
+			'title_en'                => $this->plugin->auto_translate_text( $post->post_title, 'el', 'en' ),
+			'subtitle_en'             => ! empty( $meta['subtitle'] ) ? $this->plugin->auto_translate_text( $meta['subtitle'], 'el', 'en' ) : '',
+			'card_subtitle_en'        => ! empty( $meta['card_subtitle'] ) ? $this->plugin->auto_translate_text( $meta['card_subtitle'], 'el', 'en' ) : '',
+			'badge_text_en'           => ! empty( $meta['badge_text'] ) ? $this->plugin->auto_translate_text( $meta['badge_text'], 'el', 'en' ) : '',
+			'duration_en'             => ! empty( $meta['duration'] ) ? $this->plugin->auto_translate_text( $meta['duration'], 'el', 'en' ) : '',
+			'nights_en'               => ! empty( $meta['nights'] ) ? $this->plugin->auto_translate_text( $meta['nights'], 'el', 'en' ) : '',
+			'price_note_en'           => ! empty( $meta['price_note'] ) ? $this->plugin->auto_translate_text( $meta['price_note'], 'el', 'en' ) : '',
+			'description_content_en'  => ! empty( $meta['description_content'] ) ? $this->plugin->auto_translate_text( $meta['description_content'], 'el', 'en' ) : '',
+			'includes_content_en'     => ! empty( $meta['includes_content'] ) ? $this->plugin->auto_translate_text( $meta['includes_content'], 'el', 'en' ) : '',
+			'excludes_content_en'     => ! empty( $meta['excludes_content'] ) ? $this->plugin->auto_translate_text( $meta['excludes_content'], 'el', 'en' ) : '',
+			'general_info_content_en' => ! empty( $meta['general_info_content'] ) ? $this->plugin->auto_translate_text( $meta['general_info_content'], 'el', 'en' ) : '',
+		);
+
+		// Translate package tables line by line
+		$tables_en = array();
+		if ( ! empty( $meta['includes_tables'] ) && is_array( $meta['includes_tables'] ) ) {
+			foreach ( $meta['includes_tables'] as $table_str ) {
+				$lines = array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', (string) $table_str ) ) );
+				$trans_lines = array();
+				foreach ( $lines as $line ) {
+					$cells = array_map( 'trim', explode( '|', $line ) );
+					$trans_cells = array();
+					foreach ( $cells as $cell ) {
+						$trans_cells[] = $this->plugin->auto_translate_text( $cell, 'el', 'en' );
+					}
+					$trans_lines[] = implode( ' | ', $trans_cells );
+				}
+				if ( ! empty( $trans_lines ) ) {
+					$tables_en[] = implode( "\n", $trans_lines );
+				}
+			}
+		}
+
+		$translated['includes_tables_en'] = $tables_en;
+		$translated['includes_tables_en_raw'] = implode( "\n\n---\n\n", $tables_en );
+
+		// Save immediately to post meta so data is persisted
+		$merged_raw = array_merge( $meta, $translated );
+		$this->plugin->save_package_meta_fields( $post_id, $merged_raw );
+
+		wp_send_json_success( $translated );
 	}
 }
