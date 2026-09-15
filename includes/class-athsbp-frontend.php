@@ -573,21 +573,15 @@ class ATHSBP_Frontend {
 				</div>
 
 				<div class="abp-info-tiles">
-					<?php if ( $meta['duration'] ) : ?>
+					<?php
+					$duration_nights_text = $this->get_duration_and_nights_display( $meta );
+					if ( '' !== $duration_nights_text ) :
+					?>
 						<div class="abp-info-tile abp-info-duration">
 							<span class="abp-info-tile-icon abp-info-tile-icon-duration" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'duration' ), $this->get_svg_allowed_html() ); ?></span>
 							<div class="abp-info-tile-content">
-								<span class="abp-info-tile-label"><?php echo esc_html( $meta['duration_label'] ); ?></span>
-								<strong class="abp-info-tile-value"><?php echo esc_html( $meta['duration'] ); ?></strong>
-							</div>
-						</div>
-					<?php endif; ?>
-					<?php if ( $meta['nights'] ) : ?>
-						<div class="abp-info-tile abp-info-nights">
-							<span class="abp-info-tile-icon abp-info-tile-icon-nights" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'nights' ), $this->get_svg_allowed_html() ); ?></span>
-							<div class="abp-info-tile-content">
-								<span class="abp-info-tile-label"><?php echo esc_html( $meta['nights_label'] ); ?></span>
-								<strong class="abp-info-tile-value"><?php echo esc_html( $meta['nights'] ); ?></strong>
+								<span class="abp-info-tile-label"><?php echo esc_html( $labels['duration_label'] ); ?></span>
+								<strong class="abp-info-tile-value"><?php echo esc_html( $duration_nights_text ); ?></strong>
 							</div>
 						</div>
 					<?php endif; ?>
@@ -595,8 +589,20 @@ class ATHSBP_Frontend {
 						<div class="abp-info-tile abp-info-price">
 							<span class="abp-info-tile-icon abp-info-tile-icon-price" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'price' ), $this->get_svg_allowed_html() ); ?></span>
 							<div class="abp-info-tile-content">
-								<span class="abp-info-tile-label"><?php echo esc_html( $meta['price_label'] ); ?></span>
+								<span class="abp-info-tile-label"><?php echo esc_html( ! empty( $meta['price_label'] ) ? $meta['price_label'] : $labels['price_label'] ); ?></span>
 								<strong class="abp-info-tile-value"><?php echo esc_html( $price_text ); ?></strong>
+							</div>
+						</div>
+					<?php endif; ?>
+					<?php
+					$destination_text = $this->get_package_destination_display( $post_id, $meta );
+					if ( '' !== $destination_text ) :
+					?>
+						<div class="abp-info-tile abp-info-destination">
+							<span class="abp-info-tile-icon abp-info-tile-icon-destination" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'destination' ), $this->get_svg_allowed_html() ); ?></span>
+							<div class="abp-info-tile-content">
+								<span class="abp-info-tile-label"><?php echo esc_html( $labels['destination_label'] ); ?></span>
+								<strong class="abp-info-tile-value"><?php echo esc_html( $destination_text ); ?></strong>
 							</div>
 						</div>
 					<?php endif; ?>
@@ -702,19 +708,124 @@ class ATHSBP_Frontend {
 				'stroke'          => true,
 				'stroke-width'    => true,
 			),
+			'ellipse' => array(
+				'cx'           => true,
+				'cy'           => true,
+				'rx'           => true,
+				'ry'           => true,
+				'fill'         => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+				'opacity'      => true,
+				'transform'    => true,
+			),
 		);
 	}
 
 	private function get_info_icon_svg( $type ) {
 		if ( 'duration' === $type ) {
-			return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5 2h14M5 22h14" stroke-width="2" stroke-linecap="round"/><path d="M6 2v3.5a6.5 6.5 0 0 0 3 5.42L12 13l3-2.08A6.5 6.5 0 0 0 18 5.5V2" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 22v-3.5a6.5 6.5 0 0 1 3-5.42L12 11l3 2.08A6.5 6.5 0 0 1 18 18.5V22" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></svg>';
+			return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3h12M6 21h12" stroke="#2a78bf" stroke-width="2" stroke-linecap="round"/><path d="M7 3v3.5a5.5 5.5 0 0 0 2.2 4.4L12 13l2.8-2.1A5.5 5.5 0 0 0 17 6.5V3" fill="#edf6ff" stroke="#2a78bf" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 21v-3.5a5.5 5.5 0 0 1 2.2-4.4L12 11l2.8 2.1A5.5 5.5 0 0 1 17 17.5V21" fill="#edf6ff" stroke="#2a78bf" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="12" cy="18" rx="2.5" ry="1.2" fill="#f26923"/><circle cx="12" cy="14" r="0.9" fill="#f26923"/></svg>';
 		}
 
 		if ( 'nights' === $type ) {
 			return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 19h20M2 17V5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7h14V9a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 14h14a3 3 0 0 1 3 3v2H2v-2a3 3 0 0 1 3-3z" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7" cy="8.5" r="1.5" fill="currentColor"/></svg>';
 		}
 
-		return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M9 3.5h6l1.5 3H7.5L9 3.5z" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 6.5c-4.5 0-7.5 3-7.5 8 0 4.2 3.5 5.5 7.5 5.5s7.5-1.3 7.5-5.5c0-5-3-8-7.5-8z" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10.5v5.5M13.5 12a1.5 1.5 0 0 0-1.5-1.2h-.5a1.2 1.2 0 0 0 0 2.4h1a1.2 1.2 0 0 1 0 2.4H11a1.5 1.5 0 0 1-1.5-1.2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+		if ( 'destination' === $type ) {
+			return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="19.5" rx="8" ry="3.2" fill="#e1f0ff" stroke="#1e88e5" stroke-width="1.8"/><circle cx="12" cy="19.5" r="1.6" fill="#1e88e5"/><path d="M12 2C8.68 2 6 4.68 6 8c0 4.5 6 10.5 6 10.5S18 12.5 18 8c0-3.32-2.68-6-6-6z" fill="#e53935" stroke="#b71c1c" stroke-width="1.4"/><circle cx="12" cy="8" r="2.4" fill="#ffffff"/></svg>';
+		}
+
+		return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 3.5h6l1.2 3.2c-.8.5-2 .8-4.2.8s-3.4-.3-4.2-.8L9 3.5z" fill="#f59e0b" stroke="#d97706" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 7.5c-4.8 0-8 3.2-8 7.5 0 4.2 3.6 5.5 8 5.5s8-1.3 8-5.5c0-4.3-3.2-7.5-8-7.5z" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10.5v5.5M13.8 12c0-.8-.7-1.3-1.8-1.3s-1.8.5-1.8 1.3.8 1.2 1.8 1.4c1 .2 1.8.6 1.8 1.4s-.7 1.4-1.8 1.4-1.8-.6-1.8-1.4" stroke="#d97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+	}
+
+	private function get_duration_and_nights_display( $meta ) {
+		$lang     = $this->plugin->get_current_language();
+		$duration = 'en' === $lang && ! empty( $meta['duration_en'] ) ? trim( (string) $meta['duration_en'] ) : ( isset( $meta['duration'] ) ? trim( (string) $meta['duration'] ) : '' );
+		$nights   = 'en' === $lang && ! empty( $meta['nights_en'] ) ? trim( (string) $meta['nights_en'] ) : ( isset( $meta['nights'] ) ? trim( (string) $meta['nights'] ) : '' );
+
+		$duration_num = 0;
+		if ( preg_match( '/\d+/', $duration, $m ) ) {
+			$duration_num = (int) $m[0];
+		}
+
+		$nights_num = 0;
+		if ( preg_match( '/\d+/', $nights, $m ) ) {
+			$nights_num = (int) $m[0];
+		}
+
+		if ( $nights_num > 0 && $duration_num <= 0 ) {
+			$duration_num = $nights_num + 1;
+		} elseif ( $duration_num > 1 && $nights_num <= 0 ) {
+			$nights_num = $duration_num - 1;
+		}
+
+		if ( $duration_num > 0 && $nights_num > 0 ) {
+			if ( 'en' === $lang ) {
+				$d_txt = 1 === $duration_num ? '1 Day' : $duration_num . ' Days';
+				$n_txt = 1 === $nights_num ? '1 Night' : $nights_num . ' Nights';
+			} else {
+				$d_txt = 1 === $duration_num ? '1 Ημέρα' : $duration_num . ' Ημέρες';
+				$n_txt = 1 === $nights_num ? '1 Διανυκτέρευση' : $nights_num . ' Διανυκτερεύσεις';
+			}
+			return $d_txt . ' / ' . $n_txt;
+		}
+
+		if ( '' !== $duration && '' !== $nights ) {
+			return $duration . ' / ' . $nights;
+		}
+
+		if ( '' !== $duration ) {
+			return $duration;
+		}
+
+		if ( '' !== $nights ) {
+			return $nights;
+		}
+
+		return '';
+	}
+
+	private function get_package_destination_display( $post_id, $meta ) {
+		$lang = $this->plugin->get_current_language();
+		$dest = '';
+
+		// 1. Direct meta field
+		if ( 'en' === $lang && ! empty( $meta['destination_en'] ) ) {
+			$dest = trim( (string) $meta['destination_en'] );
+		}
+		if ( '' === $dest && ! empty( $meta['destination'] ) ) {
+			$dest = trim( (string) $meta['destination'] );
+		}
+
+		// 2. Taxonomy athsbp_destination
+		if ( '' === $dest ) {
+			$terms = get_the_terms( $post_id, $this->plugin->taxonomy_name_from_slug( 'destination' ) );
+			if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+				$term = reset( $terms );
+				$dest = $term->name;
+			}
+		}
+
+		// 3. Taxonomy athsbp_country
+		if ( '' === $dest ) {
+			$terms = get_the_terms( $post_id, $this->plugin->taxonomy_name_from_slug( 'country' ) );
+			if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+				$term = reset( $terms );
+				$dest = $term->name;
+			}
+		}
+
+		// 4. Fallback to badge_text
+		if ( '' === $dest ) {
+			if ( 'en' === $lang && ! empty( $meta['badge_text_en'] ) ) {
+				$dest = trim( (string) $meta['badge_text_en'] );
+			}
+			if ( '' === $dest && ! empty( $meta['badge_text'] ) ) {
+				$dest = trim( (string) $meta['badge_text'] );
+			}
+		}
+
+		return $dest;
 	}
 
 	private function render_table_from_text( $table_text ) {

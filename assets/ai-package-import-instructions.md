@@ -26,10 +26,11 @@ You are an expert AI data extraction assistant. Your task is to extract travel p
 | `badge_text` | `string` | Text badge displayed over the package card image. Leave empty (`""`) to automatically use the Country name. |
 | `card_primary_tag` | `string` | Primary tag chip on the card. Leave empty (`""`) to automatically use the Holiday term. |
 | `card_secondary_tag` | `string` | Secondary tag chip on the card. Leave empty (`""`) to automatically use the Travel Category term. |
+| `destination` | `string` | Destination name / country shown in the 3rd stat tile under gallery images (e.g., `"Μαρόκο"` or `"Περού"`). If left empty, auto-derived from country taxonomy or badge text. |
 | `price` | `string` | Formatted price string (e.g., `"1.630€"` or `"από 450€"`). |
 | `price_note` | `string` | Note below the price (e.g., `"τελική τιμή ανά άτομο με φόρους"`). |
-| `duration` | `string` | Duration display text (e.g., `"9 ημέρες"`). |
-| `nights` | `string` | Number of nights (e.g., `"7 νύχτες"`). |
+| `nights` | `string` | **Primary duration field.** Number of nights (e.g., `"7 διανυκτερεύσεις"` or `"7 nights"`). |
+| `duration` | `string` | **Optional.** Duration in days (e.g., `"8 ημέρες"`). If left empty, the plugin automatically calculates duration as nights + 1. |
 | `expiration_date` | `string` | Date string in `YYYY-MM-DD` format (e.g., `"2026-10-31"`). Package will automatically hide after this date. Leave empty if no expiration. |
 | `description_title` | `string` | Title of the description section (default: `"Προορισμός / Περιγραφή"`). |
 | `description_content` | `string` | **HTML.** The full day-by-day itinerary or package description. Use `<p>`, `<strong>`, `<h3>`, etc. |
@@ -60,10 +61,11 @@ You are an expert AI data extraction assistant. Your task is to extract travel p
   "badge_text": "",
   "card_primary_tag": "",
   "card_secondary_tag": "",
+  "destination": "Μαρόκο",
   "price": "1630€",
   "price_note": "τελική τιμή ανά άτομο με φόρους",
+  "nights": "8 διανυκτερεύσεις",
   "duration": "9 ημέρες",
-  "nights": "7 νύχτες",
   "expiration_date": "2026-10-31",
   "description_title": "Προορισμός / Περιγραφή",
   "description_content": "<p><strong>1η Ημέρα: Αθήνα - Καζαμπλάνκα - Ραμπάτ</strong><br>Συγκέντρωση στο αεροδρόμιο και πτήση για την Καζαμπλάνκα. Άφιξη, σύντομη περιήγηση και αναχώρηση για την πρωτεύουσα Ραμπάτ.</p><p><strong>2η Ημέρα: Ραμπάτ - Μεκνές - Φεζ</strong><br>Πρωινή ξενάγηση στο Ραμπάτ και συνέχιση για την αυτοκρατορική πόλη Μεκνές και τη Φεζ.</p>",

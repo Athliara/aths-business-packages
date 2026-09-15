@@ -450,10 +450,10 @@ class ATHSBP_Admin {
 						</div>
 					</div>
 
-					<div class="abp-sub-heading"><?php esc_html_e( '1. Card Photo Pill Badges (Over Card Images)', 'aths-business-packages' ); ?></div>
+					<div class="abp-sub-heading"><?php esc_html_e( '1. Country / Card Pill Badges (.abp-card-badge, Over Card Images)', 'aths-business-packages' ); ?></div>
 					<table class="form-table abp-style-table" role="presentation">
-						<?php $this->render_style_color_row( 'style_card_badge_background_color', __( 'Card Badge Background (Over Photo)', 'aths-business-packages' ), __( 'Used behind the pill badge floating over package card images (e.g. "PERU", "KENYA", "ITALY", "FROM CRETE").', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_card_badge_text_color', __( 'Card Badge Text Color (Over Photo)', 'aths-business-packages' ), __( 'Text color of the pill badge floating over package card images.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_card_badge_background_color', __( 'Country Pill Badge Background (.abp-card-badge)', 'aths-business-packages' ), __( 'Used behind the country/destination pill badge floating over package card images (e.g. &lt;span class=&quot;abp-card-badge&quot;&gt;Περού&lt;/span&gt;, &quot;Κένυα&quot;, &quot;Ιταλία&quot;). Corresponds to CSS class .abp-card-badge.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_card_badge_text_color', __( 'Country Pill Badge Text Color (.abp-card-badge)', 'aths-business-packages' ), __( 'Text color of the country/destination pill badge floating over package card images (e.g. Περού, Κένυα). Corresponds to CSS class .abp-card-badge.', 'aths-business-packages' ), $settings ); ?>
 					</table>
 
 					<div class="abp-sub-heading"><?php esc_html_e( '2. Card Category Tags (Below Card Images)', 'aths-business-packages' ); ?></div>
@@ -672,7 +672,7 @@ class ATHSBP_Admin {
 					<span class="abp-color-swatch" style="background-color: <?php echo esc_attr( $value ); ?>"></span>
 					<input id="abp-<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( ATHSBP_Plugin::SETTINGS_KEY ); ?>[<?php echo esc_attr( $key ); ?>]" type="text" class="regular-text" value="<?php echo esc_attr( $value ); ?>" placeholder="#183b69" pattern="^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$">
 				</div>
-				<p class="description"><?php echo esc_html( $description ); ?></p>
+				<p class="description"><?php echo wp_kses_post( $description ); ?></p>
 			</td>
 		</tr>
 		<?php
@@ -825,20 +825,27 @@ class ATHSBP_Admin {
 						<input id="abp-price-label" type="text" name="athsbp_meta[price_label]" value="<?php echo esc_attr( $meta['price_label'] ); ?>" class="widefat">
 					</div>
 					<div class="abp-field">
-						<label for="abp-duration"><?php echo esc_html( $labels['duration_value'] ); ?></label>
-						<input id="abp-duration" type="text" name="athsbp_meta[duration]" value="<?php echo esc_attr( $meta['duration'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['duration_placeholder'] ); ?>">
-					</div>
-					<div class="abp-field">
-						<label for="abp-duration-label"><?php echo esc_html( $labels['duration_label'] ); ?></label>
-						<input id="abp-duration-label" type="text" name="athsbp_meta[duration_label]" value="<?php echo esc_attr( $meta['duration_label'] ); ?>" class="widefat">
+						<label for="abp-destination"><?php echo esc_html( $labels['destination_value'] ); ?></label>
+						<input id="abp-destination" type="text" name="athsbp_meta[destination]" value="<?php echo esc_attr( $meta['destination'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['destination_placeholder'] ); ?>">
+						<p class="description"><?php echo esc_html( $labels['destination_desc'] ); ?></p>
 					</div>
 					<div class="abp-field">
 						<label for="abp-nights"><?php echo esc_html( $labels['nights_value'] ); ?></label>
 						<input id="abp-nights" type="text" name="athsbp_meta[nights]" value="<?php echo esc_attr( $meta['nights'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['nights_placeholder'] ); ?>">
+						<p class="description"><?php echo esc_html( $labels['nights_desc'] ); ?></p>
 					</div>
 					<div class="abp-field">
 						<label for="abp-nights-label"><?php echo esc_html( $labels['nights_label'] ); ?></label>
 						<input id="abp-nights-label" type="text" name="athsbp_meta[nights_label]" value="<?php echo esc_attr( $meta['nights_label'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-duration"><?php echo esc_html( $labels['duration_value'] ); ?></label>
+						<input id="abp-duration" type="text" name="athsbp_meta[duration]" value="<?php echo esc_attr( $meta['duration'] ); ?>" class="widefat" placeholder="<?php echo esc_attr( $labels['duration_placeholder'] ); ?>">
+						<p class="description"><?php echo esc_html( $labels['duration_desc'] ); ?></p>
+					</div>
+					<div class="abp-field">
+						<label for="abp-duration-label"><?php echo esc_html( $labels['duration_label'] ); ?></label>
+						<input id="abp-duration-label" type="text" name="athsbp_meta[duration_label]" value="<?php echo esc_attr( $meta['duration_label'] ); ?>" class="widefat">
 					</div>
 					<div class="abp-field">
 						<label for="abp-expiration-date"><?php echo esc_html( $labels['expiration_date'] ); ?></label>
@@ -1058,12 +1065,16 @@ class ATHSBP_Admin {
 						<input id="abp-badge-text-en" type="text" name="athsbp_meta[badge_text_en]" value="<?php echo esc_attr( $meta['badge_text_en'] ); ?>" class="widefat">
 					</div>
 					<div class="abp-field">
-						<label for="abp-duration-en"><?php echo esc_html( $labels['duration_en'] ); ?></label>
-						<input id="abp-duration-en" type="text" name="athsbp_meta[duration_en]" value="<?php echo esc_attr( $meta['duration_en'] ); ?>" class="widefat">
+						<label for="abp-destination-en"><?php echo esc_html( $labels['destination_en'] ); ?></label>
+						<input id="abp-destination-en" type="text" name="athsbp_meta[destination_en]" value="<?php echo esc_attr( $meta['destination_en'] ); ?>" class="widefat" placeholder="e.g. Peru">
 					</div>
 					<div class="abp-field">
 						<label for="abp-nights-en"><?php echo esc_html( $labels['nights_en'] ); ?></label>
 						<input id="abp-nights-en" type="text" name="athsbp_meta[nights_en]" value="<?php echo esc_attr( $meta['nights_en'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field">
+						<label for="abp-duration-en"><?php echo esc_html( $labels['duration_en'] ); ?></label>
+						<input id="abp-duration-en" type="text" name="athsbp_meta[duration_en]" value="<?php echo esc_attr( $meta['duration_en'] ); ?>" class="widefat">
 					</div>
 					<div class="abp-field">
 						<label for="abp-price-note-en"><?php echo esc_html( $labels['price_note_en'] ); ?></label>
@@ -1417,13 +1428,17 @@ class ATHSBP_Admin {
 				'price_or_price_text_desc'  => 'Χρησιμοποιήστε και απλό κείμενο αν η τιμολόγηση αλλάζει συχνά.',
 				'price_note'                => 'Σημείωση Τιμής',
 				'price_note_placeholder'    => 'Περιλαμβάνονται φόροι / Από ανά διανυκτέρευση / Καλέστε για τιμή',
-				'price_label'               => 'Ετικέτα Τιμής',
-				'duration_value'            => 'Τιμή Διάρκειας',
-				'duration_placeholder'      => '3 ημέρες',
-				'duration_label'            => 'Ετικέτα Διάρκειας',
+				'destination_value'         => 'Προορισμός (Προαιρετικό)',
+				'destination_placeholder'   => 'π.χ. Περού',
+				'destination_desc'          => 'Αφήστε το κενό για αυτόματη χρήση της Χώρας/Προορισμού ή του Badge (π.χ. Περού). Εμφανίζεται ως 3η στήλη κάτω από τις εικόνες.',
 				'nights_value'              => 'Τιμή Διανυκτερεύσεων',
-				'nights_placeholder'        => '2 νύχτες',
+				'nights_placeholder'        => '12 διανυκτερεύσεις',
 				'nights_label'              => 'Ετικέτα Διανυκτερεύσεων',
+				'nights_desc'               => 'Συμπληρώστε μόνο τις διανυκτερεύσεις (π.χ. 12). Η διάρκεια υπολογίζεται αυτόματα ως διανυκτερεύσεις + 1 (π.χ. 13 ημέρες).',
+				'duration_value'            => 'Τιμή Διάρκειας (Αυτόματο)',
+				'duration_placeholder'      => '13 ημέρες',
+				'duration_label'            => 'Ετικέτα Διάρκειας',
+				'duration_desc'             => 'Υπολογίζεται αυτόματα από τις διανυκτερεύσεις (+1 ημέρα). Συμπληρώστε μόνο αν θέλετε προσαρμοσμένο κείμενο.',
 				'expiration_date'           => 'Ημερομηνία λήξης',
 				'expiration_date_desc'      => 'Προαιρετικό. Μετά από αυτή την ημερομηνία, το πακέτο κρύβεται αυτόματα από λίστες, προτάσεις και την απευθείας σελίδα του.',
 				'gallery'                   => 'Συλλογή Εικόνων',
@@ -1475,8 +1490,9 @@ class ATHSBP_Admin {
 				'subtitle_en'               => 'Υπότιτλος (Αγγλικά)',
 				'card_subtitle_en'          => 'Υπότιτλος Κάρτας (Αγγλικά)',
 				'badge_text_en'             => 'Ετικέτα / Badge Εικόνας (Αγγλικά)',
-				'duration_en'               => 'Τιμή Διάρκειας (Αγγλικά, π.χ. 5 days)',
-				'nights_en'                 => 'Τιμή Διανυκτερεύσεων (Αγγλικά, π.χ. 4 nights)',
+				'destination_en'            => 'Προορισμός (Αγγλικά)',
+				'nights_en'                 => 'Τιμή Διανυκτερεύσεων (Αγγλικά, π.χ. 12 nights)',
+				'duration_en'               => 'Τιμή Διάρκειας (Αγγλικά, π.χ. 13 days)',
 				'price_note_en'             => 'Σημείωση Τιμής (Αγγλικά)',
 				'description_en'            => 'Περιγραφή & Αναλυτικό Πρόγραμμα (Αγγλικά)',
 				'includes_en'               => 'Περιλαμβάνονται (Αγγλικά)',
@@ -1509,13 +1525,17 @@ class ATHSBP_Admin {
 			'price_or_price_text_desc'  => 'Use plain text too if pricing changes often.',
 			'price_note'                => 'Price Note',
 			'price_note_placeholder'    => 'Taxes included / From per night / Call for pricing',
-			'price_label'               => 'Price Label',
-			'duration_value'            => 'Duration Value',
-			'duration_placeholder'      => '3 days',
-			'duration_label'            => 'Duration Label',
+			'destination_value'         => 'Destination (Optional)',
+			'destination_placeholder'   => 'e.g. Peru',
+			'destination_desc'          => 'Leave empty to auto-use Country/Destination taxonomy or Badge (e.g. Peru). Displayed as the 3rd tile under images.',
 			'nights_value'              => 'Nights Value',
-			'nights_placeholder'        => '2 nights',
+			'nights_placeholder'        => '12 nights',
 			'nights_label'              => 'Nights Label',
+			'nights_desc'               => 'Enter the nights (e.g. 12). The duration is automatically calculated as nights + 1 (e.g. 13 days).',
+			'duration_value'            => 'Duration Value (Automatic)',
+			'duration_placeholder'      => '13 days',
+			'duration_label'            => 'Duration Label',
+			'duration_desc'             => 'Automatically calculated from nights (+1 day). Fill only if you need custom text.',
 			'expiration_date'           => 'Expiration Date',
 			'expiration_date_desc'      => 'Optional. After this date, the package is automatically hidden from package lists, suggestions, and direct package pages.',
 			'gallery'                   => 'Gallery',
@@ -1566,8 +1586,9 @@ class ATHSBP_Admin {
 			'subtitle_en'               => 'Subtitle (English)',
 			'card_subtitle_en'          => 'Card Subtitle (English)',
 			'badge_text_en'             => 'Image Badge (English)',
-			'duration_en'               => 'Duration (English, e.g. 5 days)',
-			'nights_en'                 => 'Nights (English, e.g. 4 nights)',
+			'destination_en'            => 'Destination (English)',
+			'nights_en'                 => 'Nights (English, e.g. 12 nights)',
+			'duration_en'               => 'Duration (English, e.g. 13 days)',
 			'price_note_en'             => 'Price Note (English)',
 			'description_en'            => 'Description & Itinerary (English)',
 			'includes_en'               => 'What\'s Included (English)',
@@ -1601,6 +1622,7 @@ class ATHSBP_Admin {
 			'subtitle_en'             => ! empty( $meta['subtitle'] ) ? $this->plugin->auto_translate_text( $meta['subtitle'], 'el', 'en' ) : '',
 			'card_subtitle_en'        => ! empty( $meta['card_subtitle'] ) ? $this->plugin->auto_translate_text( $meta['card_subtitle'], 'el', 'en' ) : '',
 			'badge_text_en'           => ! empty( $meta['badge_text'] ) ? $this->plugin->auto_translate_text( $meta['badge_text'], 'el', 'en' ) : '',
+			'destination_en'          => ! empty( $meta['destination'] ) ? $this->plugin->auto_translate_text( $meta['destination'], 'el', 'en' ) : '',
 			'duration_en'             => ! empty( $meta['duration'] ) ? $this->plugin->auto_translate_text( $meta['duration'], 'el', 'en' ) : '',
 			'nights_en'               => ! empty( $meta['nights'] ) ? $this->plugin->auto_translate_text( $meta['nights'], 'el', 'en' ) : '',
 			'price_note_en'           => ! empty( $meta['price_note'] ) ? $this->plugin->auto_translate_text( $meta['price_note'], 'el', 'en' ) : '',

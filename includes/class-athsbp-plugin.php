@@ -615,6 +615,16 @@ class ATHSBP_Plugin {
 			if ( ! empty( $wpml_lang ) && array_key_exists( $wpml_lang, $this->get_language_options() ) ) {
 				$language = $wpml_lang;
 			}
+		} elseif ( function_exists( 'determine_locale' ) && 0 === strpos( determine_locale(), 'en' ) ) {
+			$language = 'en';
+		} elseif ( 0 === strpos( get_locale(), 'en' ) ) {
+			$language = 'en';
+		}
+
+		if ( isset( $_GET['lang'] ) && in_array( $_GET['lang'], array( 'el', 'en' ), true ) ) {
+			$language = sanitize_key( $_GET['lang'] );
+		} elseif ( isset( $_SERVER['REQUEST_URI'] ) && preg_match( '#^/en(/|$)#i', (string) wp_parse_url( (string) $_SERVER['REQUEST_URI'], PHP_URL_PATH ) ) ) {
+			$language = 'en';
 		}
 
 		/**
@@ -723,6 +733,7 @@ class ATHSBP_Plugin {
 			'subtitle'                => '',
 			'card_subtitle'           => '',
 			'badge_text'              => '',
+			'destination'             => '',
 			'card_primary_tag'        => '',
 			'card_secondary_tag'      => '',
 			'price'                   => '',
@@ -750,6 +761,7 @@ class ATHSBP_Plugin {
 			'subtitle_en'             => '',
 			'card_subtitle_en'        => '',
 			'badge_text_en'           => '',
+			'destination_en'          => '',
 			'price_note_en'           => '',
 			'duration_en'             => '',
 			'nights_en'               => '',
@@ -1226,6 +1238,7 @@ class ATHSBP_Plugin {
 				'enter_package_title'     => 'Enter the package title visitors will see',
 				'duration_label'          => 'Duration',
 				'nights_label'            => 'Nights',
+				'destination_label'       => 'Destination',
 				'price_label'             => 'Price',
 				'description'             => 'Description',
 				'whats_included'          => 'What\'s Included',
@@ -1265,6 +1278,7 @@ class ATHSBP_Plugin {
 				'enter_package_title'     => 'Συμπληρώστε τον τίτλο πακέτου που θα βλέπουν οι επισκέπτες',
 				'duration_label'          => 'Διάρκεια',
 				'nights_label'            => 'Διανυκτερεύσεις',
+				'destination_label'       => 'Προορισμός',
 				'price_label'             => 'Τιμή',
 				'description'             => 'Περιγραφή',
 				'whats_included'          => 'Τι περιλαμβάνεται',
@@ -1888,18 +1902,58 @@ class ATHSBP_Plugin {
 			$includes_tables_en = $this->sanitize_table_list( (array) $raw_meta['includes_tables_en'] );
 		}
 
+		// Automatically calculate duration from nights or nights from duration if either is missing
+		$nights_val   = isset( $raw_meta['nights'] ) ? sanitize_text_field( $raw_meta['nights'] ) : '';
+		$duration_val = isset( $raw_meta['duration'] ) ? sanitize_text_field( $raw_meta['duration'] ) : '';
+
+		$nights_num = 0;
+		if ( preg_match( '/\d+/', $nights_val, $m ) ) {
+			$nights_num = (int) $m[0];
+		}
+
+		$duration_num = 0;
+		if ( preg_match( '/\d+/', $duration_val, $m ) ) {
+			$duration_num = (int) $m[0];
+		}
+
+		if ( $nights_num > 0 && 0 === $duration_num ) {
+			$duration_val = sprintf( '%d ημέρες', $nights_num + 1 );
+		} elseif ( $duration_num > 0 && 0 === $nights_num ) {
+			$nights_val = sprintf( '%d διανυκτερεύσεις', max( 1, $duration_num - 1 ) );
+		}
+
+		$nights_en_val   = isset( $raw_meta['nights_en'] ) ? sanitize_text_field( $raw_meta['nights_en'] ) : '';
+		$duration_en_val = isset( $raw_meta['duration_en'] ) ? sanitize_text_field( $raw_meta['duration_en'] ) : '';
+
+		$nights_en_num = 0;
+		if ( preg_match( '/\d+/', $nights_en_val, $m ) ) {
+			$nights_en_num = (int) $m[0];
+		}
+
+		$duration_en_num = 0;
+		if ( preg_match( '/\d+/', $duration_en_val, $m ) ) {
+			$duration_en_num = (int) $m[0];
+		}
+
+		if ( $nights_en_num > 0 && 0 === $duration_en_num ) {
+			$duration_en_val = sprintf( '%d days', $nights_en_num + 1 );
+		} elseif ( $duration_en_num > 0 && 0 === $nights_en_num ) {
+			$nights_en_val = sprintf( '%d nights', max( 1, $duration_en_num - 1 ) );
+		}
+
 		$meta = array(
 			'subtitle'            => isset( $raw_meta['subtitle'] ) ? sanitize_text_field( $raw_meta['subtitle'] ) : '',
 			'card_subtitle'       => isset( $raw_meta['card_subtitle'] ) ? sanitize_text_field( $raw_meta['card_subtitle'] ) : '',
 			'badge_text'          => isset( $raw_meta['badge_text'] ) ? sanitize_text_field( $raw_meta['badge_text'] ) : '',
+			'destination'         => isset( $raw_meta['destination'] ) ? sanitize_text_field( $raw_meta['destination'] ) : '',
 			'card_primary_tag'    => isset( $raw_meta['card_primary_tag'] ) ? sanitize_text_field( $raw_meta['card_primary_tag'] ) : '',
 			'card_secondary_tag'  => isset( $raw_meta['card_secondary_tag'] ) ? sanitize_text_field( $raw_meta['card_secondary_tag'] ) : '',
 			'price'               => isset( $raw_meta['price'] ) ? sanitize_text_field( $raw_meta['price'] ) : '',
 			'price_note'          => isset( $raw_meta['price_note'] ) ? sanitize_text_field( $raw_meta['price_note'] ) : '',
 			'price_label'         => isset( $raw_meta['price_label'] ) ? sanitize_text_field( $raw_meta['price_label'] ) : '',
-			'duration'            => isset( $raw_meta['duration'] ) ? sanitize_text_field( $raw_meta['duration'] ) : '',
+			'duration'            => $duration_val,
 			'duration_label'      => isset( $raw_meta['duration_label'] ) ? sanitize_text_field( $raw_meta['duration_label'] ) : '',
-			'nights'              => isset( $raw_meta['nights'] ) ? sanitize_text_field( $raw_meta['nights'] ) : '',
+			'nights'              => $nights_val,
 			'nights_label'        => isset( $raw_meta['nights_label'] ) ? sanitize_text_field( $raw_meta['nights_label'] ) : '',
 			'expiration_date'     => isset( $raw_meta['expiration_date'] ) ? $this->normalize_date_value( $raw_meta['expiration_date'] ) : '',
 			'description_title'   => isset( $raw_meta['description_title'] ) ? sanitize_text_field( $raw_meta['description_title'] ) : '',
@@ -1919,9 +1973,10 @@ class ATHSBP_Plugin {
 			'subtitle_en'             => isset( $raw_meta['subtitle_en'] ) ? sanitize_text_field( $raw_meta['subtitle_en'] ) : '',
 			'card_subtitle_en'        => isset( $raw_meta['card_subtitle_en'] ) ? sanitize_text_field( $raw_meta['card_subtitle_en'] ) : '',
 			'badge_text_en'           => isset( $raw_meta['badge_text_en'] ) ? sanitize_text_field( $raw_meta['badge_text_en'] ) : '',
+			'destination_en'          => isset( $raw_meta['destination_en'] ) ? sanitize_text_field( $raw_meta['destination_en'] ) : '',
 			'price_note_en'           => isset( $raw_meta['price_note_en'] ) ? sanitize_text_field( $raw_meta['price_note_en'] ) : '',
-			'duration_en'             => isset( $raw_meta['duration_en'] ) ? sanitize_text_field( $raw_meta['duration_en'] ) : '',
-			'nights_en'               => isset( $raw_meta['nights_en'] ) ? sanitize_text_field( $raw_meta['nights_en'] ) : '',
+			'duration_en'             => $duration_en_val,
+			'nights_en'               => $nights_en_val,
 			'description_title_en'    => isset( $raw_meta['description_title_en'] ) ? sanitize_text_field( $raw_meta['description_title_en'] ) : '',
 			'description_content_en'  => isset( $raw_meta['description_content_en'] ) ? wp_kses_post( $raw_meta['description_content_en'] ) : '',
 			'includes_title_en'       => isset( $raw_meta['includes_title_en'] ) ? sanitize_text_field( $raw_meta['includes_title_en'] ) : '',
@@ -1944,6 +1999,12 @@ class ATHSBP_Plugin {
 
 		$price_numeric = $this->extract_numeric_value( $meta['price'] );
 		$duration_numeric = $this->extract_numeric_value( $meta['duration'] );
+		if ( null === $duration_numeric && ! empty( $meta['nights'] ) ) {
+			$n_num = $this->extract_numeric_value( $meta['nights'] );
+			if ( null !== $n_num ) {
+				$duration_numeric = $n_num + 1;
+			}
+		}
 
 		if ( null !== $price_numeric ) {
 			update_post_meta( $post_id, self::PRICE_NUMERIC_META_KEY, $price_numeric );

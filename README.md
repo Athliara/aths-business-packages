@@ -2,7 +2,7 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.2.19`
+Current version: `0.3.0`
 
 ## What this version includes
 

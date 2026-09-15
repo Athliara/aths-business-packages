@@ -540,8 +540,9 @@
 				if (typeof data.subtitle_en !== 'undefined') $('#abp-subtitle-en').val(data.subtitle_en);
 				if (typeof data.card_subtitle_en !== 'undefined') $('#abp-card-subtitle-en').val(data.card_subtitle_en);
 				if (typeof data.badge_text_en !== 'undefined') $('#abp-badge-text-en').val(data.badge_text_en);
-				if (typeof data.duration_en !== 'undefined') $('#abp-duration-en').val(data.duration_en);
+				if (typeof data.destination_en !== 'undefined') $('#abp-destination-en').val(data.destination_en);
 				if (typeof data.nights_en !== 'undefined') $('#abp-nights-en').val(data.nights_en);
+				if (typeof data.duration_en !== 'undefined') $('#abp-duration-en').val(data.duration_en);
 				if (typeof data.price_note_en !== 'undefined') $('#abp-price-note-en').val(data.price_note_en);
 
 				setEditorValue('abp_description_content_en', data.description_content_en);
@@ -563,5 +564,30 @@
 			$btn.prop('disabled', false);
 			$spinner.removeClass('is-active');
 		});
+	});
+
+	// Auto-derive duration from nights in admin editor
+	$(document).on('input change', '#abp-nights', function () {
+		var val = $(this).val();
+		var match = val.match(/\d+/);
+		if (match) {
+			var n = parseInt(match[0], 10);
+			var curDur = ($('#abp-duration').val() || '').trim();
+			if (!curDur || /^(\d+)\s*(ημέρες|ημερες|days|day)$/i.test(curDur)) {
+				$('#abp-duration').val((n + 1) + ' ημέρες');
+			}
+		}
+	});
+
+	$(document).on('input change', '#abp-nights-en', function () {
+		var val = $(this).val();
+		var match = val.match(/\d+/);
+		if (match) {
+			var n = parseInt(match[0], 10);
+			var curDur = ($('#abp-duration-en').val() || '').trim();
+			if (!curDur || /^(\d+)\s*(days|day)$/i.test(curDur)) {
+				$('#abp-duration-en').val((n + 1) + ' days');
+			}
+		}
 	});
 })(jQuery);

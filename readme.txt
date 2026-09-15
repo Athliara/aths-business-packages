@@ -71,13 +71,17 @@ This plugin is distributed under the GNU General Public License v3 or later.
 
 = 0.3.0 =
 
-* Rethemed package summary bar into 3 standalone modern cards/tiles with sleek updated icons for Duration, Nights, and Price.
-* Added Gallery Theme selection in plugin settings: Theme 1 (default stacked view) and Theme 2 (side-by-side with main image on left and vertical thumbnail choices on right).
-* Added styling customization for pill badges (card pill badges and single package kicker badge text and background colors).
-* Added styling option to show or hide the pill badge above the package title on single package pages.
-* Added typography customization for single package main title and subtitle font sizes.
-* Added padding customization for single package header container.
-* Added typography customization for section headings and section body text font sizes.
+* Rethemed package stats into 3 standalone modern tiles with custom vector SVG line-art icons:
+  * Tile 1 (Duration & Nights): Combines days and nights into a single consolidated stat (e.g., "13 Ημέρες / 12 Διανυκτερεύσεις" / "13 Days / 12 Nights") with custom blue hourglass SVG icon.
+  * Tile 2 (Price): Price display with custom gold/amber money pouch SVG icon.
+  * Tile 3 (Destination): Displays package destination/country (e.g., "Περού", "Μαρόκο") with custom red location pin on blue oval base SVG icon.
+* Integrated Duration & Nights calculation: Nights is now the primary field; duration in days is automatically calculated (nights + 1 = days) live in the admin editor, on package save, and during AI package JSON import.
+* Added Gallery Theme selection in plugin settings: Theme 1 (default stacked gallery) and Theme 2 (side-by-side layout with 16:9 main image viewport on the left and 4 thumbnail choices on the right perfectly matching total height).
+* Clarified Country Pill Badge styling controls: Explicitly marked ".abp-card-badge" with sample values (e.g., "Περού", "Κένυα") in plugin styling settings for easy customization of background and text colors.
+* Seamless theme translator compatibility: Expanded language detection to support Polylang, WPML, TranslatePress, determine_locale() / get_locale() fallbacks, URL path prefixes (/en/), and query parameters (?lang=en).
+* Package editor enhancements: Added dedicated Destination field with English translation and one-click auto-translation support.
+* Updated AI Package Importer: Updated ai-package-import-instructions.md and ai-package-template.json with destination support and nights-to-days automatic calculation.
+* Styling and responsive enhancements: Added single package kicker pill badge show/hide toggle, typography font size controls for titles/subtitles/headings/body, padding controls, and responsive tile wrapping.
 
 = 0.2.19 =
 
