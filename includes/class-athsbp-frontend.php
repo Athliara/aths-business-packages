@@ -592,15 +592,6 @@ class ATHSBP_Frontend {
 							</div>
 						</div>
 					<?php endif; ?>
-					<?php if ( $meta['price'] ) : ?>
-						<div class="abp-info-tile abp-info-price">
-							<span class="abp-info-tile-icon abp-info-tile-icon-price" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'price' ), $this->get_svg_allowed_html() ); ?></span>
-							<div class="abp-info-tile-content">
-								<span class="abp-info-tile-label"><?php echo esc_html( ! empty( $meta['price_label'] ) ? $meta['price_label'] : $labels['price_label'] ); ?></span>
-								<strong class="abp-info-tile-value"><?php echo esc_html( $price_text ); ?></strong>
-							</div>
-						</div>
-					<?php endif; ?>
 					<?php
 					$destination_text = $this->get_package_destination_display( $post_id, $meta );
 					if ( '' !== $destination_text ) :
@@ -610,6 +601,15 @@ class ATHSBP_Frontend {
 							<div class="abp-info-tile-content">
 								<span class="abp-info-tile-label"><?php echo esc_html( $labels['destination_label'] ); ?></span>
 								<strong class="abp-info-tile-value"><?php echo esc_html( $destination_text ); ?></strong>
+							</div>
+						</div>
+					<?php endif; ?>
+					<?php if ( $meta['price'] ) : ?>
+						<div class="abp-info-tile abp-info-price">
+							<span class="abp-info-tile-icon abp-info-tile-icon-price" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'price' ), $this->get_svg_allowed_html() ); ?></span>
+							<div class="abp-info-tile-content">
+								<span class="abp-info-tile-label"><?php echo esc_html( ! empty( $meta['price_label'] ) ? $meta['price_label'] : $labels['price_label'] ); ?></span>
+								<strong class="abp-info-tile-value"><?php echo esc_html( $price_text ); ?></strong>
 							</div>
 						</div>
 					<?php endif; ?>
