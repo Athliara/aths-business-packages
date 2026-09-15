@@ -242,6 +242,7 @@ class ATHSBP_Plugin {
 			'style_label_background_color' => '#183b69',
 			'style_tag_text_color'         => '#ffffff',
 			'style_tag_background_color'   => '#2ea7e0',
+			'style_tag_border_color'       => '#ff9b5c',
 			'style_card_badge_text_color'       => '#ffffff',
 			'style_card_badge_background_color' => '#2ea7e0',
 			'style_title_color'            => '#183b69',

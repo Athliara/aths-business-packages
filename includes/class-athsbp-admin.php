@@ -80,6 +80,7 @@ class ATHSBP_Admin {
 			'style_label_background_color' => $this->sanitize_hex_setting( $settings, $current, 'style_label_background_color' ),
 			'style_tag_text_color'         => $this->sanitize_hex_setting( $settings, $current, 'style_tag_text_color' ),
 			'style_tag_background_color'   => $this->sanitize_hex_setting( $settings, $current, 'style_tag_background_color' ),
+			'style_tag_border_color'       => $this->sanitize_hex_setting( $settings, $current, 'style_tag_border_color' ),
 			'style_card_badge_text_color'       => $this->sanitize_hex_setting( $settings, $current, 'style_card_badge_text_color' ),
 			'style_card_badge_background_color' => $this->sanitize_hex_setting( $settings, $current, 'style_card_badge_background_color' ),
 			'style_title_color'            => $this->sanitize_hex_setting( $settings, $current, 'style_title_color' ),
@@ -440,32 +441,63 @@ class ATHSBP_Admin {
 				</div>
 
 				<div class="abp-settings-panel athsbp-settings-panel <?php echo 'styling' === $active_tab ? 'is-active' : ''; ?>" data-athsbp-settings-panel="styling">
+				
 				<div class="abp-settings-card athsbp-settings-card">
 					<div class="abp-section-heading">
 						<div>
-							<h2><?php esc_html_e( 'Colors & Badges', 'aths-business-packages' ); ?></h2>
-							<p><?php esc_html_e( 'Set hex colors for package labels, pill badges, tags, titles, and subtitles on the frontend.', 'aths-business-packages' ); ?></p>
+							<h2><?php esc_html_e( 'Pill Badges & Tags Colors', 'aths-business-packages' ); ?></h2>
+							<p><?php esc_html_e( 'Easily configure background, text, and border colors for card badges, category tags, and single package kickers.', 'aths-business-packages' ); ?></p>
+						</div>
+					</div>
+
+					<div class="abp-sub-heading"><?php esc_html_e( '1. Card Photo Pill Badges (Over Card Images)', 'aths-business-packages' ); ?></div>
+					<table class="form-table abp-style-table" role="presentation">
+						<?php $this->render_style_color_row( 'style_card_badge_background_color', __( 'Card Badge Background (Over Photo)', 'aths-business-packages' ), __( 'Used behind the pill badge floating over package card images (e.g. "PERU", "KENYA", "ITALY", "FROM CRETE").', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_card_badge_text_color', __( 'Card Badge Text Color (Over Photo)', 'aths-business-packages' ), __( 'Text color of the pill badge floating over package card images.', 'aths-business-packages' ), $settings ); ?>
+					</table>
+
+					<div class="abp-sub-heading"><?php esc_html_e( '2. Card Category Tags (Below Card Images)', 'aths-business-packages' ); ?></div>
+					<table class="form-table abp-style-table" role="presentation">
+						<?php $this->render_style_color_row( 'style_tag_background_color', __( 'Category Tag Background (Below Photo)', 'aths-business-packages' ), __( 'Used behind the category pill tags below card images (e.g. "ALL YEAR", "GROUP PACKAGES").', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_tag_text_color', __( 'Category Tag Text Color (Below Photo)', 'aths-business-packages' ), __( 'Text color of category pill tags below card images.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_tag_border_color', __( 'Category Tag Border Color (Below Photo)', 'aths-business-packages' ), __( 'Outline border color around category pill tags below card images.', 'aths-business-packages' ), $settings ); ?>
+					</table>
+
+					<div class="abp-sub-heading"><?php esc_html_e( '3. Single Package Page Pill Badge (Above Title)', 'aths-business-packages' ); ?></div>
+					<table class="form-table abp-style-table" role="presentation">
+						<?php
+						$this->render_style_select_row(
+							'single_show_kicker',
+							__( 'Show / Hide Pill Badge', 'aths-business-packages' ),
+							__( 'Choose whether to display or hide the pill badge above the title on single package pages.', 'aths-business-packages' ),
+							$settings,
+							array(
+								'yes' => __( 'Show Pill Badge', 'aths-business-packages' ),
+								'no'  => __( 'Hide Pill Badge', 'aths-business-packages' ),
+							)
+						);
+						?>
+						<?php $this->render_style_color_row( 'style_single_kicker_background_color', __( 'Single Package Badge Background', 'aths-business-packages' ), __( 'Used behind the pill badge above the title on single package pages (e.g. "TRAVEL PACKAGE").', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_single_kicker_text_color', __( 'Single Package Badge Text Color', 'aths-business-packages' ), __( 'Text color of the pill badge above the title on single package pages.', 'aths-business-packages' ), $settings ); ?>
+					</table>
+
+					<div class="abp-sub-heading"><?php esc_html_e( '4. Archive Page Header Badge', 'aths-business-packages' ); ?></div>
+					<table class="form-table abp-style-table" role="presentation">
+						<?php $this->render_style_color_row( 'style_label_background_color', __( 'Archive Header Badge Background', 'aths-business-packages' ), __( 'Used behind the header badge on the package archive page.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_label_text_color', __( 'Archive Header Badge Text Color', 'aths-business-packages' ), __( 'Text color of the header badge on the package archive page.', 'aths-business-packages' ), $settings ); ?>
+					</table>
+				</div>
+
+				<div class="abp-settings-card athsbp-settings-card" style="margin-top:20px;">
+					<div class="abp-section-heading">
+						<div>
+							<h2><?php esc_html_e( 'Titles & Subtitles Colors', 'aths-business-packages' ); ?></h2>
+							<p><?php esc_html_e( 'Configure primary heading and secondary subtitle colors across your package listings.', 'aths-business-packages' ); ?></p>
 						</div>
 					</div>
 					<table class="form-table abp-style-table" role="presentation">
-						<?php $this->render_style_color_row( 'style_label_text_color', __( 'General Label Text Color', 'aths-business-packages' ), __( 'Used for small labels and info tags.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_label_background_color', __( 'General Label Background Color', 'aths-business-packages' ), __( 'Used behind small labels and info tags.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_card_badge_text_color', __( 'Card Pill Badge Text Color', 'aths-business-packages' ), __( 'Used only for the pill badge shown over package card images (e.g. Group / Private).', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_card_badge_background_color', __( 'Card Pill Badge Background Color', 'aths-business-packages' ), __( 'Used only behind the pill badge shown over package card images.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_single_kicker_text_color', __( 'Single Package Pill Badge Text Color', 'aths-business-packages' ), __( 'Used for the pill badge above the package title on single package pages.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_single_kicker_background_color', __( 'Single Package Pill Badge Background Color', 'aths-business-packages' ), __( 'Used behind the pill badge above the package title on single package pages.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_tag_text_color', __( 'Tag Text Color', 'aths-business-packages' ), __( 'Used for package category tags.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_tag_background_color', __( 'Tag Background Color', 'aths-business-packages' ), __( 'Used behind package category tags.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_title_color', __( 'Title Color', 'aths-business-packages' ), __( 'Used for archive titles, single package titles, card titles, filter headings, and section headings.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_subtitle_color', __( 'Subtitle Color', 'aths-business-packages' ), __( 'Used for archive intro text, package subtitles, card subtitles, and descriptive text accents.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_slider_active_color', __( 'Slider Active Color', 'aths-business-packages' ), __( 'Used for the selected range segment on price and duration sliders.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_slider_track_color', __( 'Slider Track Color', 'aths-business-packages' ), __( 'Used for the inactive range track on price and duration sliders.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_slider_thumb_color', __( 'Slider Button Color', 'aths-business-packages' ), __( 'Used for the draggable slider handles.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_pagination_text_color', __( 'Pagination Text Color', 'aths-business-packages' ), __( 'Used for normal pagination numbers and next/previous links.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_pagination_background_color', __( 'Pagination Background Color', 'aths-business-packages' ), __( 'Used behind normal pagination links.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_pagination_border_color', __( 'Pagination Border Color', 'aths-business-packages' ), __( 'Used for pagination link borders.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_pagination_active_text_color', __( 'Active Pagination Text Color', 'aths-business-packages' ), __( 'Used for the currently selected pagination number.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_pagination_active_background_color', __( 'Active Pagination Background Color', 'aths-business-packages' ), __( 'Used behind the currently selected pagination number.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_title_color', __( 'Title & Heading Color', 'aths-business-packages' ), __( 'Used for archive titles, single package titles, card titles, filter headings, and section headings.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_subtitle_color', __( 'Subtitle & Accent Color', 'aths-business-packages' ), __( 'Used for archive intro text, package subtitles, card subtitles, and descriptive accents.', 'aths-business-packages' ), $settings ); ?>
 					</table>
 				</div>
 
@@ -473,7 +505,7 @@ class ATHSBP_Admin {
 					<div class="abp-section-heading">
 						<div>
 							<h2><?php esc_html_e( 'Single Package Layout & Sizing', 'aths-business-packages' ); ?></h2>
-							<p><?php esc_html_e( 'Customize the gallery layout, title sizing, header padding, and kicker badge visibility for single package pages.', 'aths-business-packages' ); ?></p>
+							<p><?php esc_html_e( 'Customize the gallery layout, title sizing, and header padding for single package pages.', 'aths-business-packages' ); ?></p>
 						</div>
 					</div>
 					<table class="form-table abp-style-table" role="presentation">
@@ -486,18 +518,6 @@ class ATHSBP_Admin {
 							array(
 								'theme_1' => __( 'Theme 1: Stacked (Main on top, thumbnails below)', 'aths-business-packages' ),
 								'theme_2' => __( 'Theme 2: Side-by-Side (Main on left, vertical thumbnails on right)', 'aths-business-packages' ),
-							)
-						);
-						?>
-						<?php
-						$this->render_style_select_row(
-							'single_show_kicker',
-							__( 'Show Pill Badge Above Title', 'aths-business-packages' ),
-							__( 'Choose whether to display or hide the pill badge (e.g. "Travel Package") above the title on single package pages.', 'aths-business-packages' ),
-							$settings,
-							array(
-								'yes' => __( 'Show Pill Badge', 'aths-business-packages' ),
-								'no'  => __( 'Hide Pill Badge', 'aths-business-packages' ),
 							)
 						);
 						?>
@@ -517,6 +537,31 @@ class ATHSBP_Admin {
 					<table class="form-table abp-style-table" role="presentation">
 						<?php $this->render_style_text_row( 'style_section_title_font_size', __( 'Section Heading Font Size', 'aths-business-packages' ), __( 'Specify custom CSS font size for section headings like Description, Includes, etc. (e.g. 2rem or 30px). Leave blank for default.', 'aths-business-packages' ), $settings, 'clamp(2rem, 4vw, 3rem)' ); ?>
 						<?php $this->render_style_text_row( 'style_section_body_font_size', __( 'Section Body Text Font Size', 'aths-business-packages' ), __( 'Specify custom CSS font size for section body/paragraph text (e.g. 1rem or 16px). Leave blank for default.', 'aths-business-packages' ), $settings, '1rem' ); ?>
+					</table>
+				</div>
+
+				<div class="abp-settings-card athsbp-settings-card" style="margin-top:20px;">
+					<div class="abp-section-heading">
+						<div>
+							<h2><?php esc_html_e( 'Filter Sliders & Pagination Colors', 'aths-business-packages' ); ?></h2>
+							<p><?php esc_html_e( 'Customize the range filter sliders and archive pagination controls.', 'aths-business-packages' ); ?></p>
+						</div>
+					</div>
+
+					<div class="abp-sub-heading"><?php esc_html_e( 'Filter Sliders (Price & Duration)', 'aths-business-packages' ); ?></div>
+					<table class="form-table abp-style-table" role="presentation">
+						<?php $this->render_style_color_row( 'style_slider_active_color', __( 'Slider Active Color', 'aths-business-packages' ), __( 'Used for the selected range segment on price and duration sliders.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_slider_track_color', __( 'Slider Track Color', 'aths-business-packages' ), __( 'Used for the inactive range track on price and duration sliders.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_slider_thumb_color', __( 'Slider Button Color', 'aths-business-packages' ), __( 'Used for the draggable slider handles.', 'aths-business-packages' ), $settings ); ?>
+					</table>
+
+					<div class="abp-sub-heading"><?php esc_html_e( 'Archive Pagination Numbers & Links', 'aths-business-packages' ); ?></div>
+					<table class="form-table abp-style-table" role="presentation">
+						<?php $this->render_style_color_row( 'style_pagination_text_color', __( 'Pagination Text Color', 'aths-business-packages' ), __( 'Used for normal pagination numbers and next/previous links.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_pagination_background_color', __( 'Pagination Background Color', 'aths-business-packages' ), __( 'Used behind normal pagination links.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_pagination_border_color', __( 'Pagination Border Color', 'aths-business-packages' ), __( 'Used for pagination link borders.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_pagination_active_text_color', __( 'Active Page Text Color', 'aths-business-packages' ), __( 'Used for the currently selected pagination number.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_pagination_active_background_color', __( 'Active Page Background Color', 'aths-business-packages' ), __( 'Used behind the currently selected pagination number.', 'aths-business-packages' ), $settings ); ?>
 					</table>
 				</div>
 				</div>

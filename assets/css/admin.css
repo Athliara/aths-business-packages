@@ -677,4 +677,17 @@
 	border-radius: 8px;
 }
 
+.abp-sub-heading {
+	margin: 22px 0 6px;
+	padding: 9px 14px;
+	background: #f4f8fc;
+	border-left: 4px solid #173b69;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 700;
+	color: #173b69;
+}
 
+.abp-sub-heading:first-child {
+	margin-top: 0;
+}

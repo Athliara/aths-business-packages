@@ -510,7 +510,7 @@
 	min-width: 0;
 	min-height: 36px;
 	padding: 2px 10px 1px 10px;
-	border: 1px solid #ff9b5c;
+	border: 1px solid var(--abp-tag-border-color, #ff9b5c);
 	border-radius: 999px;
 	font-size: .72rem;
 	font-weight: 700;

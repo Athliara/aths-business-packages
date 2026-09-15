@@ -35,6 +35,7 @@ class ATHSBP_Frontend {
 			'style_label_background_color'             => '--abp-label-background-color',
 			'style_tag_text_color'                     => '--abp-tag-text-color',
 			'style_tag_background_color'               => '--abp-tag-background-color',
+			'style_tag_border_color'                   => '--abp-tag-border-color',
 			'style_card_badge_text_color'              => '--abp-card-badge-text-color',
 			'style_card_badge_background_color'        => '--abp-card-badge-background-color',
 			'style_single_kicker_text_color'           => '--abp-single-kicker-text-color',
