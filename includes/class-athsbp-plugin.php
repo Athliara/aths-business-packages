@@ -254,6 +254,15 @@ class ATHSBP_Plugin {
 			'style_pagination_border_color'            => '#dbe4ef',
 			'style_pagination_active_text_color'       => '#ffffff',
 			'style_pagination_active_background_color' => '#183b69',
+			'style_single_kicker_text_color'           => '#ffffff',
+			'style_single_kicker_background_color'     => '#183b69',
+			'single_show_kicker'                       => 'yes',
+			'style_single_title_font_size'             => '',
+			'style_single_subtitle_font_size'          => '',
+			'style_single_header_padding'              => '',
+			'gallery_theme'                            => 'theme_1',
+			'style_section_title_font_size'            => '',
+			'style_section_body_font_size'             => '',
 		);
 	}
 

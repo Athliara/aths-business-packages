@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.2.19
+Stable tag: 0.3.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -30,9 +30,9 @@ Main features:
 * Extensible language synchronization filter (`athsbp_current_language`) compatible with any theme, Polylang, and WPML.
 * Site currency selection with symbol-based display.
 * Shortcode-based archive output for theme builders, Elementor, BeTheme, and standard pages.
-* Custom single-package presentation with gallery, info bar, description sections, manual HTML table content, multiple builder tables, optional PDF display, and similar package suggestions.
+* Custom single-package presentation with gallery themes, standalone stat tiles, description sections, manual HTML table content, multiple builder tables, optional PDF display, and similar package suggestions.
 * Separate rich-text sections for what is included and what is not included.
-* Styling controls for labels, tags, titles, subtitles, card image badges, and range sliders.
+* Styling controls for labels, pill badges, tags, titles, subtitles, card image badges, single header padding, typography sizes, and range sliders.
 * Dynamic two-tag package cards using Important Holidays and Travel Categories, with per-package manual tag overrides.
 * AI Package Import tool to import travel packages from JSON files or raw JSON text, with bundled AI agent instructions and downloadable markdown guide.
 
@@ -53,8 +53,6 @@ This plugin is intended for WordPress 6.9 or later and requires PHP 8.2 or later
 
 == Frequently Asked Questions ==
 
-= What versions are required? =
-
 The plugin requires WordPress 6.9 or later and PHP 8.2 or later. It has also been checked with PHP 8.5.
 
 = Does the plugin require Elementor or BeTheme? =
@@ -70,6 +68,16 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+= 0.3.0 =
+
+* Rethemed package summary bar into 3 standalone modern cards/tiles with sleek updated icons for Duration, Nights, and Price.
+* Added Gallery Theme selection in plugin settings: Theme 1 (default stacked view) and Theme 2 (side-by-side with main image on left and vertical thumbnail choices on right).
+* Added styling customization for pill badges (card pill badges and single package kicker badge text and background colors).
+* Added styling option to show or hide the pill badge above the package title on single package pages.
+* Added typography customization for single package main title and subtitle font sizes.
+* Added padding customization for single package header container.
+* Added typography customization for section headings and section body text font sizes.
 
 = 0.2.19 =
 

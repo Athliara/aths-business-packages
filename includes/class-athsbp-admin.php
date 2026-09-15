@@ -92,7 +92,27 @@ class ATHSBP_Admin {
 			'style_pagination_border_color'            => $this->sanitize_hex_setting( $settings, $current, 'style_pagination_border_color' ),
 			'style_pagination_active_text_color'       => $this->sanitize_hex_setting( $settings, $current, 'style_pagination_active_text_color' ),
 			'style_pagination_active_background_color' => $this->sanitize_hex_setting( $settings, $current, 'style_pagination_active_background_color' ),
+			'style_single_kicker_text_color'           => $this->sanitize_hex_setting( $settings, $current, 'style_single_kicker_text_color' ),
+			'style_single_kicker_background_color'     => $this->sanitize_hex_setting( $settings, $current, 'style_single_kicker_background_color' ),
+			'single_show_kicker'                       => isset( $settings['single_show_kicker'] ) && 'no' === $settings['single_show_kicker'] ? 'no' : 'yes',
+			'gallery_theme'                            => isset( $settings['gallery_theme'] ) && in_array( $settings['gallery_theme'], array( 'theme_1', 'theme_2' ), true ) ? $settings['gallery_theme'] : 'theme_1',
+			'style_single_title_font_size'             => $this->sanitize_css_dimension( $settings, $current, 'style_single_title_font_size' ),
+			'style_single_subtitle_font_size'          => $this->sanitize_css_dimension( $settings, $current, 'style_single_subtitle_font_size' ),
+			'style_single_header_padding'              => $this->sanitize_css_dimension( $settings, $current, 'style_single_header_padding' ),
+			'style_section_title_font_size'            => $this->sanitize_css_dimension( $settings, $current, 'style_section_title_font_size' ),
+			'style_section_body_font_size'             => $this->sanitize_css_dimension( $settings, $current, 'style_section_body_font_size' ),
 		);
+	}
+
+	private function sanitize_css_dimension( $settings, $current, $key ) {
+		if ( ! isset( $settings[ $key ] ) ) {
+			return isset( $current[ $key ] ) ? $current[ $key ] : '';
+		}
+
+		$value = trim( sanitize_text_field( $settings[ $key ] ) );
+		$clean = preg_replace( '/[^0-9a-zA-Z\s.,%()\-]/', '', $value );
+
+		return $clean;
 	}
 
 	private function sanitize_hex_setting( $settings, $current, $key ) {
@@ -423,17 +443,19 @@ class ATHSBP_Admin {
 				<div class="abp-settings-card athsbp-settings-card">
 					<div class="abp-section-heading">
 						<div>
-							<h2><?php esc_html_e( 'Styling', 'aths-business-packages' ); ?></h2>
-							<p><?php esc_html_e( 'Set hex colors for package labels, tags, titles, and subtitles on the frontend.', 'aths-business-packages' ); ?></p>
+							<h2><?php esc_html_e( 'Colors & Badges', 'aths-business-packages' ); ?></h2>
+							<p><?php esc_html_e( 'Set hex colors for package labels, pill badges, tags, titles, and subtitles on the frontend.', 'aths-business-packages' ); ?></p>
 						</div>
 					</div>
 					<table class="form-table abp-style-table" role="presentation">
-						<?php $this->render_style_color_row( 'style_label_text_color', __( 'Label Text Color', 'aths-business-packages' ), __( 'Used for small labels such as archive/single package pills and info labels.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_label_background_color', __( 'Label Background Color', 'aths-business-packages' ), __( 'Used behind small label pills.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_tag_text_color', __( 'Tag Text Color', 'aths-business-packages' ), __( 'Used for package image badges and package type tags.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_tag_background_color', __( 'Tag Background Color', 'aths-business-packages' ), __( 'Used behind package image badges and package type tags.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_card_badge_text_color', __( 'Card Image Label Text Color', 'aths-business-packages' ), __( 'Used only for the label shown over package card images.', 'aths-business-packages' ), $settings ); ?>
-						<?php $this->render_style_color_row( 'style_card_badge_background_color', __( 'Card Image Label Background Color', 'aths-business-packages' ), __( 'Used only behind the label shown over package card images.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_label_text_color', __( 'General Label Text Color', 'aths-business-packages' ), __( 'Used for small labels and info tags.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_label_background_color', __( 'General Label Background Color', 'aths-business-packages' ), __( 'Used behind small labels and info tags.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_card_badge_text_color', __( 'Card Pill Badge Text Color', 'aths-business-packages' ), __( 'Used only for the pill badge shown over package card images (e.g. Group / Private).', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_card_badge_background_color', __( 'Card Pill Badge Background Color', 'aths-business-packages' ), __( 'Used only behind the pill badge shown over package card images.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_single_kicker_text_color', __( 'Single Package Pill Badge Text Color', 'aths-business-packages' ), __( 'Used for the pill badge above the package title on single package pages.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_single_kicker_background_color', __( 'Single Package Pill Badge Background Color', 'aths-business-packages' ), __( 'Used behind the pill badge above the package title on single package pages.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_tag_text_color', __( 'Tag Text Color', 'aths-business-packages' ), __( 'Used for package category tags.', 'aths-business-packages' ), $settings ); ?>
+						<?php $this->render_style_color_row( 'style_tag_background_color', __( 'Tag Background Color', 'aths-business-packages' ), __( 'Used behind package category tags.', 'aths-business-packages' ), $settings ); ?>
 						<?php $this->render_style_color_row( 'style_title_color', __( 'Title Color', 'aths-business-packages' ), __( 'Used for archive titles, single package titles, card titles, filter headings, and section headings.', 'aths-business-packages' ), $settings ); ?>
 						<?php $this->render_style_color_row( 'style_subtitle_color', __( 'Subtitle Color', 'aths-business-packages' ), __( 'Used for archive intro text, package subtitles, card subtitles, and descriptive text accents.', 'aths-business-packages' ), $settings ); ?>
 						<?php $this->render_style_color_row( 'style_slider_active_color', __( 'Slider Active Color', 'aths-business-packages' ), __( 'Used for the selected range segment on price and duration sliders.', 'aths-business-packages' ), $settings ); ?>
@@ -444,6 +466,57 @@ class ATHSBP_Admin {
 						<?php $this->render_style_color_row( 'style_pagination_border_color', __( 'Pagination Border Color', 'aths-business-packages' ), __( 'Used for pagination link borders.', 'aths-business-packages' ), $settings ); ?>
 						<?php $this->render_style_color_row( 'style_pagination_active_text_color', __( 'Active Pagination Text Color', 'aths-business-packages' ), __( 'Used for the currently selected pagination number.', 'aths-business-packages' ), $settings ); ?>
 						<?php $this->render_style_color_row( 'style_pagination_active_background_color', __( 'Active Pagination Background Color', 'aths-business-packages' ), __( 'Used behind the currently selected pagination number.', 'aths-business-packages' ), $settings ); ?>
+					</table>
+				</div>
+
+				<div class="abp-settings-card athsbp-settings-card" style="margin-top:20px;">
+					<div class="abp-section-heading">
+						<div>
+							<h2><?php esc_html_e( 'Single Package Layout & Sizing', 'aths-business-packages' ); ?></h2>
+							<p><?php esc_html_e( 'Customize the gallery layout, title sizing, header padding, and kicker badge visibility for single package pages.', 'aths-business-packages' ); ?></p>
+						</div>
+					</div>
+					<table class="form-table abp-style-table" role="presentation">
+						<?php
+						$this->render_style_select_row(
+							'gallery_theme',
+							__( 'Gallery Layout Theme', 'aths-business-packages' ),
+							__( 'Choose Theme 1 (stacked: main image on top, thumbnails below) or Theme 2 (split: main image on the left, vertical thumbnail choices on the right).', 'aths-business-packages' ),
+							$settings,
+							array(
+								'theme_1' => __( 'Theme 1: Stacked (Main on top, thumbnails below)', 'aths-business-packages' ),
+								'theme_2' => __( 'Theme 2: Side-by-Side (Main on left, vertical thumbnails on right)', 'aths-business-packages' ),
+							)
+						);
+						?>
+						<?php
+						$this->render_style_select_row(
+							'single_show_kicker',
+							__( 'Show Pill Badge Above Title', 'aths-business-packages' ),
+							__( 'Choose whether to display or hide the pill badge (e.g. "Travel Package") above the title on single package pages.', 'aths-business-packages' ),
+							$settings,
+							array(
+								'yes' => __( 'Show Pill Badge', 'aths-business-packages' ),
+								'no'  => __( 'Hide Pill Badge', 'aths-business-packages' ),
+							)
+						);
+						?>
+						<?php $this->render_style_text_row( 'style_single_title_font_size', __( 'Single Package Title Font Size', 'aths-business-packages' ), __( 'Specify custom CSS font size for the single package main title (e.g. 2.6rem or 38px). Leave blank for responsive default.', 'aths-business-packages' ), $settings, 'clamp(1.95rem, 2.45vw, 3rem)' ); ?>
+						<?php $this->render_style_text_row( 'style_single_subtitle_font_size', __( 'Single Package Subtitle Font Size', 'aths-business-packages' ), __( 'Specify custom CSS font size for the single package subtitle (e.g. 1.2rem or 19px). Leave blank for default.', 'aths-business-packages' ), $settings, '1.18rem' ); ?>
+						<?php $this->render_style_text_row( 'style_single_header_padding', __( 'Single Package Header Padding', 'aths-business-packages' ), __( 'Specify custom padding for the single package header block (e.g. 34px 38px 18px or 24px 28px). Leave blank for default.', 'aths-business-packages' ), $settings, '34px 38px 18px' ); ?>
+					</table>
+				</div>
+
+				<div class="abp-settings-card athsbp-settings-card" style="margin-top:20px;">
+					<div class="abp-section-heading">
+						<div>
+							<h2><?php esc_html_e( 'Section Typography', 'aths-business-packages' ); ?></h2>
+							<p><?php esc_html_e( 'Customize typography for description, includes, and custom sections across single package pages.', 'aths-business-packages' ); ?></p>
+						</div>
+					</div>
+					<table class="form-table abp-style-table" role="presentation">
+						<?php $this->render_style_text_row( 'style_section_title_font_size', __( 'Section Heading Font Size', 'aths-business-packages' ), __( 'Specify custom CSS font size for section headings like Description, Includes, etc. (e.g. 2rem or 30px). Leave blank for default.', 'aths-business-packages' ), $settings, 'clamp(2rem, 4vw, 3rem)' ); ?>
+						<?php $this->render_style_text_row( 'style_section_body_font_size', __( 'Section Body Text Font Size', 'aths-business-packages' ), __( 'Specify custom CSS font size for section body/paragraph text (e.g. 1rem or 16px). Leave blank for default.', 'aths-business-packages' ), $settings, '1rem' ); ?>
 					</table>
 				</div>
 				</div>
@@ -554,6 +627,36 @@ class ATHSBP_Admin {
 					<span class="abp-color-swatch" style="background-color: <?php echo esc_attr( $value ); ?>"></span>
 					<input id="abp-<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( ATHSBP_Plugin::SETTINGS_KEY ); ?>[<?php echo esc_attr( $key ); ?>]" type="text" class="regular-text" value="<?php echo esc_attr( $value ); ?>" placeholder="#183b69" pattern="^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$">
 				</div>
+				<p class="description"><?php echo esc_html( $description ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	private function render_style_text_row( $key, $label, $description, $settings, $placeholder = '' ) {
+		$value = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
+		?>
+		<tr>
+			<th scope="row"><label for="abp-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
+			<td>
+				<input id="abp-<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( ATHSBP_Plugin::SETTINGS_KEY ); ?>[<?php echo esc_attr( $key ); ?>]" type="text" class="regular-text" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo esc_attr( $placeholder ); ?>">
+				<p class="description"><?php echo esc_html( $description ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	private function render_style_select_row( $key, $label, $description, $settings, $options = array() ) {
+		$value = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
+		?>
+		<tr>
+			<th scope="row"><label for="abp-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
+			<td>
+				<select id="abp-<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( ATHSBP_Plugin::SETTINGS_KEY ); ?>[<?php echo esc_attr( $key ); ?>]">
+					<?php foreach ( $options as $opt_key => $opt_label ) : ?>
+						<option value="<?php echo esc_attr( $opt_key ); ?>" <?php selected( $value, $opt_key ); ?>><?php echo esc_html( $opt_label ); ?></option>
+					<?php endforeach; ?>
+				</select>
 				<p class="description"><?php echo esc_html( $description ); ?></p>
 			</td>
 		</tr>

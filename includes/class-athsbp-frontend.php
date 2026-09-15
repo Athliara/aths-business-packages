@@ -31,17 +31,19 @@ class ATHSBP_Frontend {
 	private function get_custom_style_css() {
 		$settings = $this->plugin->get_settings();
 		$keys = array(
-			'style_label_text_color'       => '--abp-label-text-color',
-			'style_label_background_color' => '--abp-label-background-color',
-			'style_tag_text_color'         => '--abp-tag-text-color',
-			'style_tag_background_color'   => '--abp-tag-background-color',
-			'style_card_badge_text_color'       => '--abp-card-badge-text-color',
-			'style_card_badge_background_color' => '--abp-card-badge-background-color',
-			'style_title_color'            => '--abp-title-color',
-			'style_subtitle_color'         => '--abp-subtitle-color',
-			'style_slider_active_color'    => '--abp-slider-active-color',
-			'style_slider_track_color'     => '--abp-slider-track-color',
-			'style_slider_thumb_color'     => '--abp-slider-thumb-color',
+			'style_label_text_color'                   => '--abp-label-text-color',
+			'style_label_background_color'             => '--abp-label-background-color',
+			'style_tag_text_color'                     => '--abp-tag-text-color',
+			'style_tag_background_color'               => '--abp-tag-background-color',
+			'style_card_badge_text_color'              => '--abp-card-badge-text-color',
+			'style_card_badge_background_color'        => '--abp-card-badge-background-color',
+			'style_single_kicker_text_color'           => '--abp-single-kicker-text-color',
+			'style_single_kicker_background_color'     => '--abp-single-kicker-background-color',
+			'style_title_color'                        => '--abp-title-color',
+			'style_subtitle_color'                     => '--abp-subtitle-color',
+			'style_slider_active_color'                => '--abp-slider-active-color',
+			'style_slider_track_color'                 => '--abp-slider-track-color',
+			'style_slider_thumb_color'                 => '--abp-slider-thumb-color',
 			'style_pagination_text_color'              => '--abp-pagination-text-color',
 			'style_pagination_background_color'        => '--abp-pagination-background-color',
 			'style_pagination_border_color'            => '--abp-pagination-border-color',
@@ -54,6 +56,26 @@ class ATHSBP_Frontend {
 			$value = isset( $settings[ $setting_key ] ) ? sanitize_hex_color( $settings[ $setting_key ] ) : '';
 			if ( $value ) {
 				$variables[] = $css_variable . ': ' . $value;
+			}
+		}
+
+		$dimension_keys = array(
+			'style_single_title_font_size'    => '--abp-single-title-font-size',
+			'style_single_subtitle_font_size' => '--abp-single-subtitle-font-size',
+			'style_single_header_padding'     => '--abp-single-header-padding',
+			'style_section_title_font_size'   => '--abp-section-title-font-size',
+			'style_section_body_font_size'    => '--abp-section-body-font-size',
+		);
+
+		foreach ( $dimension_keys as $dim_key => $css_var ) {
+			if ( ! empty( $settings[ $dim_key ] ) ) {
+				$clean = trim( preg_replace( '/[^0-9a-zA-Z\s.,%()\-]/', '', $settings[ $dim_key ] ) );
+				if ( is_numeric( $clean ) ) {
+					$clean .= 'px';
+				}
+				if ( '' !== $clean ) {
+					$variables[] = $css_var . ': ' . $clean;
+				}
 			}
 		}
 
@@ -501,6 +523,9 @@ class ATHSBP_Frontend {
 		$gallery_ids   = $meta['gallery_ids'];
 		$related_title = $this->plugin->get_localized_setting( 'related_title' );
 		$labels        = $this->plugin->get_ui_labels();
+		$settings      = $this->plugin->get_settings();
+		$show_kicker   = ! isset( $settings['single_show_kicker'] ) || 'no' !== $settings['single_show_kicker'];
+		$gallery_theme = isset( $settings['gallery_theme'] ) && 'theme_2' === $settings['gallery_theme'] ? 'theme_2' : 'theme_1';
 		$has_includes      = '' !== trim( wp_strip_all_tags( $meta['includes_content'] ) );
 		$has_excludes      = '' !== trim( wp_strip_all_tags( $meta['excludes_content'] ) );
 		$has_general_info  = '' !== trim( wp_strip_all_tags( $meta['general_info_content'] ) );
@@ -510,7 +535,9 @@ class ATHSBP_Frontend {
 		?>
 		<div class="abp-single">
 			<header class="abp-single-header">
-				<span class="abp-single-kicker"><?php echo esc_html( $labels['travel_package'] ); ?></span>
+				<?php if ( $show_kicker ) : ?>
+					<span class="abp-single-kicker"><?php echo esc_html( $labels['travel_package'] ); ?></span>
+				<?php endif; ?>
 				<h1><?php echo esc_html( get_the_title( $post_id ) ); ?></h1>
 				<?php if ( $meta['subtitle'] ) : ?>
 					<p class="abp-single-subtitle"><?php echo esc_html( $meta['subtitle'] ); ?></p>
@@ -518,7 +545,7 @@ class ATHSBP_Frontend {
 			</header>
 
 			<div class="abp-single-gallery-shell">
-				<div class="abp-single-gallery">
+				<div class="abp-single-gallery abp-gallery-<?php echo esc_attr( $gallery_theme ); ?>">
 					<div class="abp-single-main-image">
 						<?php if ( has_post_thumbnail( $post_id ) ) : ?>
 							<?php echo get_the_post_thumbnail( $post_id, 'full', array( 'class' => 'abp-active-image', 'data-abp-main-image' => '1' ) ); ?>
@@ -544,23 +571,32 @@ class ATHSBP_Frontend {
 					<?php endif; ?>
 				</div>
 
-				<div class="abp-info-bar abp-info-bar-inline">
+				<div class="abp-info-tiles">
 					<?php if ( $meta['duration'] ) : ?>
-						<div class="abp-info-item abp-info-duration">
-							<span class="abp-info-icon" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'duration' ), $this->get_svg_allowed_html() ); ?></span>
-							<div><span><?php echo esc_html( $meta['duration_label'] ); ?></span><strong><?php echo esc_html( $meta['duration'] ); ?></strong></div>
+						<div class="abp-info-tile abp-info-duration">
+							<span class="abp-info-tile-icon abp-info-tile-icon-duration" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'duration' ), $this->get_svg_allowed_html() ); ?></span>
+							<div class="abp-info-tile-content">
+								<span class="abp-info-tile-label"><?php echo esc_html( $meta['duration_label'] ); ?></span>
+								<strong class="abp-info-tile-value"><?php echo esc_html( $meta['duration'] ); ?></strong>
+							</div>
 						</div>
 					<?php endif; ?>
 					<?php if ( $meta['nights'] ) : ?>
-						<div class="abp-info-item abp-info-nights">
-							<span class="abp-info-icon" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'nights' ), $this->get_svg_allowed_html() ); ?></span>
-							<div><span><?php echo esc_html( $meta['nights_label'] ); ?></span><strong><?php echo esc_html( $meta['nights'] ); ?></strong></div>
+						<div class="abp-info-tile abp-info-nights">
+							<span class="abp-info-tile-icon abp-info-tile-icon-nights" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'nights' ), $this->get_svg_allowed_html() ); ?></span>
+							<div class="abp-info-tile-content">
+								<span class="abp-info-tile-label"><?php echo esc_html( $meta['nights_label'] ); ?></span>
+								<strong class="abp-info-tile-value"><?php echo esc_html( $meta['nights'] ); ?></strong>
+							</div>
 						</div>
 					<?php endif; ?>
 					<?php if ( $meta['price'] ) : ?>
-						<div class="abp-info-item abp-info-price">
-							<span class="abp-info-icon abp-info-currency-icon" aria-hidden="true"><?php echo esc_html( $this->plugin->get_currency_config()['symbol'] ); ?></span>
-							<div><span><?php echo esc_html( $meta['price_label'] ); ?></span><strong><?php echo esc_html( $price_text ); ?></strong></div>
+						<div class="abp-info-tile abp-info-price">
+							<span class="abp-info-tile-icon abp-info-tile-icon-price" aria-hidden="true"><?php echo wp_kses( $this->get_info_icon_svg( 'price' ), $this->get_svg_allowed_html() ); ?></span>
+							<div class="abp-info-tile-content">
+								<span class="abp-info-tile-label"><?php echo esc_html( $meta['price_label'] ); ?></span>
+								<strong class="abp-info-tile-value"><?php echo esc_html( $price_text ); ?></strong>
+							</div>
 						</div>
 					<?php endif; ?>
 				</div>
@@ -617,14 +653,15 @@ class ATHSBP_Frontend {
 	private function get_svg_allowed_html() {
 		return array(
 			'svg'  => array(
-				'viewBox' => true,
-				'fill'    => true,
-				'stroke'  => true,
-				'xmlns'   => true,
-				'width'   => true,
-				'height'  => true,
+				'viewBox'     => true,
+				'fill'        => true,
+				'stroke'      => true,
+				'xmlns'       => true,
+				'width'       => true,
+				'height'      => true,
+				'class'       => true,
 				'aria-hidden' => true,
-				'focusable' => true,
+				'focusable'   => true,
 			),
 			'path' => array(
 				'd'               => true,
@@ -633,37 +670,50 @@ class ATHSBP_Frontend {
 				'stroke-width'    => true,
 				'stroke-linecap'  => true,
 				'stroke-linejoin' => true,
+				'opacity'         => true,
 			),
 			'circle' => array(
-				'cx' => true,
-				'cy' => true,
-				'r'  => true,
-				'fill' => true,
-				'stroke' => true,
-				'stroke-width' => true,
+				'cx'              => true,
+				'cy'              => true,
+				'r'               => true,
+				'fill'            => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
+				'opacity'         => true,
 			),
 			'line' => array(
-				'x1' => true,
-				'x2' => true,
-				'y1' => true,
-				'y2' => true,
-				'stroke' => true,
-				'stroke-width' => true,
-				'stroke-linecap' => true,
+				'x1'              => true,
+				'x2'              => true,
+				'y1'              => true,
+				'y2'              => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
+				'stroke-linecap'  => true,
+			),
+			'rect' => array(
+				'x'               => true,
+				'y'               => true,
+				'width'           => true,
+				'height'          => true,
+				'rx'              => true,
+				'ry'              => true,
+				'fill'            => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
 			),
 		);
 	}
 
 	private function get_info_icon_svg( $type ) {
 		if ( 'duration' === $type ) {
-			return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8.5" stroke-width="1.8"/><path d="M12 7.5V12l3 2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+			return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5 2h14M5 22h14" stroke-width="2" stroke-linecap="round"/><path d="M6 2v3.5a6.5 6.5 0 0 0 3 5.42L12 13l3-2.08A6.5 6.5 0 0 0 18 5.5V2" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 22v-3.5a6.5 6.5 0 0 1 3-5.42L12 11l3 2.08A6.5 6.5 0 0 1 18 18.5V22" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></svg>';
 		}
 
 		if ( 'nights' === $type ) {
-			return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M7 6.5h10a2 2 0 0 1 2 2V15H5V8.5a2 2 0 0 1 2-2Z" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 15v2.5M19 15v2.5M8 10.5h3" stroke-width="1.8" stroke-linecap="round"/></svg>';
+			return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 19h20M2 17V5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7h14V9a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 14h14a3 3 0 0 1 3 3v2H2v-2a3 3 0 0 1 3-3z" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7" cy="8.5" r="1.5" fill="currentColor"/></svg>';
 		}
 
-		return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.5v15" stroke-width="1.8" stroke-linecap="round"/><path d="M15.5 7.5c0-1.4-1.6-2.5-3.5-2.5S8.5 6.1 8.5 7.5 10 10 12 10s3.5 1.1 3.5 2.5S13.9 15 12 15s-3.5-1.1-3.5-2.5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+		return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M9 3.5h6l1.5 3H7.5L9 3.5z" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 6.5c-4.5 0-7.5 3-7.5 8 0 4.2 3.5 5.5 7.5 5.5s7.5-1.3 7.5-5.5c0-5-3-8-7.5-8z" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10.5v5.5M13.5 12a1.5 1.5 0 0 0-1.5-1.2h-.5a1.2 1.2 0 0 0 0 2.4h1a1.2 1.2 0 0 1 0 2.4H11a1.5 1.5 0 0 1-1.5-1.2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 	}
 
 	private function render_table_from_text( $table_text ) {
