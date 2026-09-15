@@ -621,10 +621,19 @@ class ATHSBP_Plugin {
 			$language = 'en';
 		}
 
-		if ( isset( $_GET['lang'] ) && in_array( $_GET['lang'], array( 'el', 'en' ), true ) ) {
-			$language = sanitize_key( $_GET['lang'] );
-		} elseif ( isset( $_SERVER['REQUEST_URI'] ) && preg_match( '#^/en(/|$)#i', (string) wp_parse_url( (string) $_SERVER['REQUEST_URI'], PHP_URL_PATH ) ) ) {
-			$language = 'en';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public query parameter is read-only for language switching.
+		if ( isset( $_GET['lang'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public query parameter is read-only for language switching.
+			$requested_lang = sanitize_key( wp_unslash( $_GET['lang'] ) );
+			if ( in_array( $requested_lang, array( 'el', 'en' ), true ) ) {
+				$language = $requested_lang;
+			}
+		} elseif ( isset( $_SERVER['REQUEST_URI'] ) ) {
+			$request_uri  = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+			$request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+			if ( preg_match( '#^/en(/|$)#i', $request_path ) ) {
+				$language = 'en';
+			}
 		}
 
 		/**

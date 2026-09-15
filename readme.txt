@@ -72,9 +72,10 @@ This plugin is distributed under the GNU General Public License v3 or later.
 = 0.3.0 =
 
 * Rethemed package stats into 3 standalone modern tiles with custom vector SVG line-art icons:
-  * Tile 1 (Duration & Nights): Combines days and nights into a single consolidated stat (e.g., "13 Ημέρες / 12 Διανυκτερεύσεις" / "13 Days / 12 Nights") with custom blue hourglass SVG icon.
-  * Tile 2 (Price): Price display with custom gold/amber money pouch SVG icon.
-  * Tile 3 (Destination): Displays package destination/country (e.g., "Περού", "Μαρόκο") with custom red location pin on blue oval base SVG icon.
+  * Tile 1 (Duration & Nights - Left): Combines days and nights into a single consolidated stat (e.g., "13 Ημέρες / 12 Διανυκτερεύσεις" / "13 Days / 12 Nights") with custom blue hourglass SVG icon.
+  * Tile 2 (Destination - Middle): Displays package destination/country (e.g., "Περού", "Μαρόκο") with custom red location pin on blue oval base SVG icon.
+  * Tile 3 (Price - Right): Price display with custom gold/amber money pouch SVG icon.
+* Security and sanitization hardening: Ensured strict nonce annotations and input sanitization (esc_url_raw, wp_unslash, sanitize_key) across language detection helpers passing WordPress Plugin Check (PCP).
 * Integrated Duration & Nights calculation: Nights is now the primary field; duration in days is automatically calculated (nights + 1 = days) live in the admin editor, on package save, and during AI package JSON import.
 * Added Gallery Theme selection in plugin settings: Theme 1 (default stacked gallery) and Theme 2 (side-by-side layout with 16:9 main image viewport on the left and 4 thumbnail choices on the right perfectly matching total height).
 * Clarified Country Pill Badge styling controls: Explicitly marked ".abp-card-badge" with sample values (e.g., "Περού", "Κένυα") in plugin styling settings for easy customization of background and text colors.
