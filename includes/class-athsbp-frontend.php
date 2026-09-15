@@ -19,6 +19,7 @@ class ATHSBP_Frontend {
 
 	public function register_assets() {
 		wp_register_style( 'athsbp-frontend', ATHSBP_PLUGIN_URL . 'assets/css/frontend.css', array(), ATHSBP_VERSION );
+		wp_add_inline_style( 'athsbp-frontend', $this->get_custom_style_css() );
 		wp_register_script( 'athsbp-frontend', ATHSBP_PLUGIN_URL . 'assets/js/frontend.js', array(), ATHSBP_VERSION, true );
 	}
 
@@ -136,6 +137,9 @@ class ATHSBP_Frontend {
 		ob_start();
 		?>
 		<div class="abp-archive-shell">
+			<?php $custom_css = $this->get_custom_style_css(); if ( ! empty( $custom_css ) ) : ?>
+				<style><?php echo $custom_css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></style>
+			<?php endif; ?>
 			<div class="abp-archive-header">
 				<span class="abp-archive-kicker"><?php echo esc_html( $labels['archive_kicker'] ); ?></span>
 				<h1><?php echo esc_html( $this->plugin->get_localized_setting( 'archive_title' ) ); ?></h1>
@@ -535,6 +539,9 @@ class ATHSBP_Frontend {
 		$has_pdf       = ! empty( $meta['includes_pdf_id'] );
 		?>
 		<div class="abp-single">
+			<?php $custom_css = $this->get_custom_style_css(); if ( ! empty( $custom_css ) ) : ?>
+				<style><?php echo $custom_css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></style>
+			<?php endif; ?>
 			<header class="abp-single-header">
 				<?php if ( $show_kicker ) : ?>
 					<span class="abp-single-kicker"><?php echo esc_html( $labels['travel_package'] ); ?></span>
