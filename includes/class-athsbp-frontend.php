@@ -84,7 +84,7 @@ class ATHSBP_Frontend {
 			return '';
 		}
 
-		return '.abp-theme-wrap, .abp-archive-shell, .abp-single {' . implode( ';', $variables ) . ';}';
+		return ':root, .abp-theme-wrap, .abp-archive-shell, .abp-single {' . implode( ';', $variables ) . ';}';
 	}
 
 	public function render_packages_shortcode( $atts = array() ) {
