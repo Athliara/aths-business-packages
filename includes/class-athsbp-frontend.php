@@ -545,7 +545,7 @@ class ATHSBP_Frontend {
 			</header>
 
 			<div class="abp-single-gallery-shell">
-				<div class="abp-single-gallery abp-gallery-<?php echo esc_attr( $gallery_theme ); ?>">
+				<div class="abp-single-gallery abp-gallery-<?php echo esc_attr( $gallery_theme ); ?><?php echo 'theme_2' === $gallery_theme ? ' abp-gallery-theme-2 abp-gallery-theme_2' : ''; ?>">
 					<div class="abp-single-main-image">
 						<?php if ( has_post_thumbnail( $post_id ) ) : ?>
 							<?php echo get_the_post_thumbnail( $post_id, 'full', array( 'class' => 'abp-active-image', 'data-abp-main-image' => '1' ) ); ?>

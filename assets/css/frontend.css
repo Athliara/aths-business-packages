@@ -608,20 +608,23 @@
 }
 
 /* Gallery Theme 2 - Side-by-side Layout (Main photo on left, vertical thumbnail choices on right) */
-.abp-single-gallery.abp-gallery-theme-2 {
+.abp-single-gallery.abp-gallery-theme-2,
+.abp-single-gallery.abp-gallery-theme_2 {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) 220px;
 	gap: 16px;
 	align-items: stretch;
 }
 
-.abp-single-gallery.abp-gallery-theme-2 .abp-single-main-image {
+.abp-single-gallery.abp-gallery-theme-2 .abp-single-main-image,
+.abp-single-gallery.abp-gallery-theme_2 .abp-single-main-image {
 	height: 100%;
 	min-height: 480px;
 	aspect-ratio: unset;
 }
 
-.abp-single-gallery.abp-gallery-theme-2 .abp-single-thumbs {
+.abp-single-gallery.abp-gallery-theme-2 .abp-single-thumbs,
+.abp-single-gallery.abp-gallery-theme_2 .abp-single-thumbs {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
@@ -631,30 +634,35 @@
 	justify-content: space-between;
 }
 
-.abp-single-gallery.abp-gallery-theme-2 .abp-thumb {
+.abp-single-gallery.abp-gallery-theme-2 .abp-thumb,
+.abp-single-gallery.abp-gallery-theme_2 .abp-thumb {
 	flex: 1 1 0;
 	min-height: 84px;
 	aspect-ratio: unset;
 }
 
 @media (max-width: 860px) {
-	.abp-single-gallery.abp-gallery-theme-2 {
+	.abp-single-gallery.abp-gallery-theme-2,
+	.abp-single-gallery.abp-gallery-theme_2 {
 		grid-template-columns: 1fr;
 	}
 
-	.abp-single-gallery.abp-gallery-theme-2 .abp-single-main-image {
+	.abp-single-gallery.abp-gallery-theme-2 .abp-single-main-image,
+	.abp-single-gallery.abp-gallery-theme_2 .abp-single-main-image {
 		min-height: 280px;
 		aspect-ratio: 16 / 9;
 	}
 
-	.abp-single-gallery.abp-gallery-theme-2 .abp-single-thumbs {
+	.abp-single-gallery.abp-gallery-theme-2 .abp-single-thumbs,
+	.abp-single-gallery.abp-gallery-theme_2 .abp-single-thumbs {
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		margin-top: 14px;
 		height: auto;
 	}
 
-	.abp-single-gallery.abp-gallery-theme-2 .abp-thumb {
+	.abp-single-gallery.abp-gallery-theme-2 .abp-thumb,
+	.abp-single-gallery.abp-gallery-theme_2 .abp-thumb {
 		aspect-ratio: 1.2;
 		min-height: 0;
 	}
