@@ -612,15 +612,15 @@
 .abp-single-gallery.abp-gallery-theme-2,
 .abp-single-gallery.abp-gallery-theme_2 {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) 220px;
+	grid-template-columns: minmax(0, 1fr) calc(20% - 16px);
 	gap: 16px;
-	align-items: start;
+	align-items: stretch;
 }
 
 .abp-single-gallery.abp-gallery-theme-2 .abp-single-main-image,
 .abp-single-gallery.abp-gallery-theme_2 .abp-single-main-image {
 	width: 100%;
-	height: auto;
+	height: 100%;
 	min-height: 0;
 	aspect-ratio: 16 / 9;
 }
@@ -629,11 +629,11 @@
 .abp-single-gallery.abp-gallery-theme_2 .abp-single-thumbs {
 	display: flex;
 	flex-direction: column;
+	justify-content: space-between;
 	gap: 12px;
 	margin-top: 0;
 	padding: 0;
-	height: auto;
-	justify-content: flex-start;
+	height: 100%;
 }
 
 .abp-single-gallery.abp-gallery-theme-2 .abp-thumb,
