@@ -706,7 +706,7 @@
 	background: #fff;
 	border: 1px solid #dbe4ef;
 	border-radius: 20px;
-	padding: 18px 22px;
+	padding: 18px 40px;
 	box-shadow: 0 10px 22px rgba(17, 34, 68, .05);
 	display: flex;
 	align-items: center;
@@ -781,7 +781,7 @@
 
 .abp-info-tile-value {
 	display: block;
-	font-size: 1.15rem;
+	font-size: 0.97rem;
 	font-weight: 800;
 	color: var(--abp-title-color, #183b69);
 	line-height: 1.25;
