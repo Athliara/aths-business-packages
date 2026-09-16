@@ -21,6 +21,7 @@ class ATHSBP_Admin {
 		add_action( 'admin_post_athsbp_import_package', array( $this, 'handle_package_import' ) );
 		add_action( 'admin_post_athsbp_download_ai_instructions', array( $this, 'handle_download_ai_instructions' ) );
 		add_action( 'wp_ajax_athsbp_auto_translate_package', array( $this, 'ajax_auto_translate_package' ) );
+		add_filter( 'submenu_file', array( $this, 'filter_submenu_file' ), 10, 2 );
 	}
 
 	public function register_admin_pages() {
@@ -32,6 +33,32 @@ class ATHSBP_Admin {
 			'athsbp-settings',
 			array( $this, 'render_settings_page' )
 		);
+
+		add_submenu_page(
+			'edit.php?post_type=' . ATHSBP_Plugin::CPT,
+			__( 'AI Package Import', 'aths-business-packages' ),
+			__( 'AI Import', 'aths-business-packages' ),
+			'manage_options',
+			'athsbp-ai-import',
+			array( $this, 'render_ai_import_page' )
+		);
+	}
+
+	public function render_ai_import_page() {
+		// Set tab to ai-import and render the settings page directly
+		$_GET['tab'] = 'ai-import';
+		$this->render_settings_page();
+	}
+
+	public function filter_submenu_file( $submenu_file, $parent_file ) {
+		if ( 'edit.php?post_type=' . ATHSBP_Plugin::CPT === $parent_file ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Tab parameter for menu highlighting.
+			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+			if ( 'ai-import' === $tab ) {
+				return 'athsbp-ai-import';
+			}
+		}
+		return $submenu_file;
 	}
 
 	public function register_settings() {
@@ -233,7 +260,11 @@ class ATHSBP_Admin {
 			return;
 		}
 
-		$allowed_ids = array( ATHSBP_Plugin::CPT, ATHSBP_Plugin::CPT . '_page_athsbp-settings' );
+		$allowed_ids = array(
+			ATHSBP_Plugin::CPT,
+			ATHSBP_Plugin::CPT . '_page_athsbp-settings',
+			ATHSBP_Plugin::CPT . '_page_athsbp-ai-import',
+		);
 		if ( ! in_array( $screen->id, $allowed_ids, true ) ) {
 			return;
 		}
@@ -285,7 +316,13 @@ class ATHSBP_Admin {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Tab navigation parameter in admin screen.
-		$raw_tab    = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general';
+		$raw_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+		if ( '' === $raw_tab && isset( $_GET['page'] ) && 'athsbp-ai-import' === $_GET['page'] ) {
+			$raw_tab = 'ai-import';
+		}
+		if ( '' === $raw_tab ) {
+			$raw_tab = 'general';
+		}
 		$active_tab = in_array( $raw_tab, array( 'general', 'styling', 'ai-import' ), true ) ? $raw_tab : 'general';
 
 		$instructions_file_path = ATHSBP_PLUGIN_DIR . 'assets/ai-package-import-instructions.md';

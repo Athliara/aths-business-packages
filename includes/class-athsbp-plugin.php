@@ -2288,9 +2288,17 @@ class ATHSBP_Plugin {
 			if ( $existing ) {
 				$term_ids[] = is_array( $existing ) ? (int) $existing['term_id'] : (int) $existing;
 			} else {
-				$created = wp_insert_term( $term_name, $taxonomy );
-				if ( ! is_wp_error( $created ) && isset( $created['term_id'] ) ) {
-					$term_ids[] = (int) $created['term_id'];
+				$found = get_term_by( 'slug', sanitize_title( $term_name ), $taxonomy );
+				if ( ! $found ) {
+					$found = get_term_by( 'name', $term_name, $taxonomy );
+				}
+				if ( $found && ! is_wp_error( $found ) ) {
+					$term_ids[] = (int) $found->term_id;
+				} else {
+					$created = wp_insert_term( $term_name, $taxonomy );
+					if ( ! is_wp_error( $created ) && isset( $created['term_id'] ) ) {
+						$term_ids[] = (int) $created['term_id'];
+					}
 				}
 			}
 		}

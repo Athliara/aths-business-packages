@@ -81,7 +81,7 @@ This plugin is distributed under the GNU General Public License v3 or later.
 * Clarified Country Pill Badge styling controls: Explicitly marked ".abp-card-badge" with sample values (e.g., "Περού", "Κένυα") in plugin styling settings for easy customization of background and text colors.
 * Seamless theme translator compatibility: Expanded language detection to support Polylang, WPML, TranslatePress, determine_locale() / get_locale() fallbacks, URL path prefixes (/en/), and query parameters (?lang=en).
 * Package editor enhancements: Added dedicated Destination field with English translation and one-click auto-translation support.
-* Updated AI Package Importer: Updated ai-package-import-instructions.md and ai-package-template.json with destination support and nights-to-days automatic calculation.
+* Updated AI Package Importer: Added direct "AI Import" submenu navigation under Settings, updated AI instructions to mandate downloadable .json file output and strict matching to existing filter taxonomies without creating random terms, and added case-insensitive slug/name matching fallbacks.
 * Styling and responsive enhancements: Added single package kicker pill badge show/hide toggle, typography font size controls for titles/subtitles/headings/body, padding controls, and responsive tile wrapping.
 
 = 0.2.19 =
