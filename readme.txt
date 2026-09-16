@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -34,7 +34,7 @@ Main features:
 * Separate rich-text sections for what is included and what is not included.
 * Styling controls for labels, pill badges, tags, titles, subtitles, card image badges, single header padding, typography sizes, and range sliders.
 * Dynamic two-tag package cards using Important Holidays and Travel Categories, with per-package manual tag overrides.
-* AI Package Import tool to import travel packages from JSON files or raw JSON text, with bundled AI agent instructions and downloadable markdown guide.
+* AI Package Import tool to import travel packages from JSON files or raw JSON text, with direct admin submenu access, bundled AI agent instructions, and downloadable markdown guide.
 
 This plugin is intended for WordPress 6.9 or later and requires PHP 8.2 or later. The codebase has also been checked with modern PHP versions, including PHP 8.5.
 
@@ -68,6 +68,16 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+= 0.3.1 =
+
+* Added direct "AI Import" navigation link under Settings in the WordPress admin menu for quick access to the AI package import interface.
+* Synchronized admin submenu highlighting so navigating to the AI Import screen keeps the AI Import menu item active.
+* Updated AI Package Import instructions (`ai-package-import-instructions.md`) and reference template (`ai-package-template.json`):
+  * Mandated that AI agents (ChatGPT, Claude, Gemini, etc.) always output and return a downloadable `.json` file rather than raw chat text or code blocks.
+  * Enforced strict matching against established WordPress filter taxonomies (destinations, countries, holidays, categories), strictly prohibiting arbitrary or non-existing filter terms.
+* Enhanced package term assignment in `assign_terms_to_package()` with case-insensitive fallback matching by slug and name before creating new terms in WordPress.
+* Improved release ZIP packaging with explicit directory entries and strict Unix forward slashes (`/`).
 
 = 0.3.0 =
 

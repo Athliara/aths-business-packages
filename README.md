@@ -2,9 +2,13 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.3.0`
+Current version: `0.3.1`
 
 ## What this version includes
+
+- Direct "AI Import" submenu link under Settings with synchronized menu highlighting
+- Updated AI package extraction instructions mandating downloadable `.json` file outputs and strict existing filter matching
+- Enhanced term assignment with case-insensitive fallback matching before creating new terms
 
 - Native multilingual translation support with seamless language switching and graceful fallback for monolingual setups
 - Dedicated `Translations (EN)` tab in the package editor for titles, subtitles, itineraries, inclusions, exclusions, notes, and tables
