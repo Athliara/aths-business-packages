@@ -317,7 +317,9 @@ class ATHSBP_Admin {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Tab navigation parameter in admin screen.
 		$raw_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
-		if ( '' === $raw_tab && isset( $_GET['page'] ) && 'athsbp-ai-import' === $_GET['page'] ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Submenu page navigation parameter.
+		$raw_page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		if ( '' === $raw_tab && 'athsbp-ai-import' === $raw_page ) {
 			$raw_tab = 'ai-import';
 		}
 		if ( '' === $raw_tab ) {
