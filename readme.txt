@@ -77,6 +77,7 @@ This plugin is distributed under the GNU General Public License v3 or later.
   * Mandated that AI agents (ChatGPT, Claude, Gemini, etc.) always output and return a downloadable `.json` file rather than raw chat text or code blocks.
   * Enforced strict matching against established WordPress filter taxonomies (destinations, countries, holidays, categories), strictly prohibiting arbitrary or non-existing filter terms.
 * Enhanced package term assignment in `assign_terms_to_package()` with case-insensitive fallback matching by slug and name before creating new terms in WordPress.
+* Fixed WordPress Plugin Check (PCP) nonce verification warning on admin settings page navigation by sanitizing page query parameter with standard PHPCS annotation.
 * Improved release ZIP packaging with explicit directory entries and strict Unix forward slashes (`/`).
 
 = 0.3.0 =
