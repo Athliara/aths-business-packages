@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.3.1
+Stable tag: 0.3.2
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -68,6 +68,13 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+= 0.3.2 =
+
+* Locked Destination filter taxonomy (`athsbp_destination` / `Προορισμοί`): Disabled adding, editing, or deleting destination terms in WordPress admin and hooked `pre_insert_term` to block unauthorized term insertion outside internal predefined term syncing.
+* Hardened Package Importer for destinations: Enforced strict resolution of imported destination inputs against the 10 predefined destination options (Greek/English names, slugs, and unicode dash variations: en-dash, em-dash, and standard hyphens).
+* Implemented Country-to-Destination fallback matching: When destination inputs or package country terms match predefined countries (e.g., Morocco -> Africa - Indian Ocean, Italy -> Europe, Peru -> South America), the importer automatically maps and assigns the package to the correct regional destination.
+* Restricted Importer term creation: Importer is explicitly denied from calling `wp_insert_term` for destination terms, completely preventing the creation of rogue or unrecognized destination categories.
 
 = 0.3.1 =
 

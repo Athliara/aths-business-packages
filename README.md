@@ -2,10 +2,13 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.3.1`
+Current version: `0.3.2`
 
 ## What this version includes
 
+- Locked Destination filter taxonomy (`athsbp_destination` / `Προορισμοί`) preventing unauthorized category creation in admin
+- Hardened package importer to strictly choose from predefined destination terms with unicode dash normalization
+- Smart country-to-destination inference mapping regional destinations from package country data
 - Direct "AI Import" submenu link under Settings with synchronized menu highlighting
 - Updated AI package extraction instructions mandating downloadable `.json` file outputs and strict existing filter matching
 - Enhanced term assignment with case-insensitive fallback matching before creating new terms

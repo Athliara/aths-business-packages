@@ -38,6 +38,11 @@ class ATHSBP_Plugin {
 	 */
 	private $frontend;
 
+	/**
+	 * @var bool Flag indicating whether predefined terms are currently being seeded/synced.
+	 */
+	private $is_seeding_terms = false;
+
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -65,6 +70,7 @@ class ATHSBP_Plugin {
 		add_filter( 'enter_title_here', array( $this, 'filter_title_placeholder' ), 10, 2 );
 		add_filter( 'the_title', array( $this, 'filter_package_title' ), 10, 2 );
 		add_filter( 'plugin_action_links_' . plugin_basename( ATHSBP_PLUGIN_FILE ), array( $this, 'add_plugin_action_links' ) );
+		add_filter( 'pre_insert_term', array( $this, 'filter_pre_insert_term' ), 10, 2 );
 	}
 
 	public function activate() {
@@ -325,24 +331,54 @@ class ATHSBP_Plugin {
 				continue;
 			}
 
-			$slug = $this->taxonomy_name_from_slug( $group['slug'] );
+			$slug           = $this->taxonomy_name_from_slug( $group['slug'] );
+			$is_destination = 'destination' === $group['slug'] || $this->taxonomy_name_from_slug( 'destination' ) === $slug;
+
+			$args = array(
+				'labels'            => array(
+					'name'          => $group['label'],
+					'singular_name' => $group['singular'],
+				),
+				'public'            => true,
+				'hierarchical'      => true,
+				'show_in_rest'      => true,
+				'show_admin_column' => true,
+				'rewrite'           => array( 'slug' => sanitize_title( $group['slug'] ) ),
+			);
+
+			if ( $is_destination ) {
+				$args['capabilities'] = array(
+					'manage_terms' => 'do_not_allow',
+					'edit_terms'   => 'do_not_allow',
+					'delete_terms' => 'do_not_allow',
+					'assign_terms' => 'edit_posts',
+				);
+			}
 
 			register_taxonomy(
 				$slug,
 				self::CPT,
-				array(
-					'labels'            => array(
-						'name'          => $group['label'],
-						'singular_name' => $group['singular'],
-					),
-					'public'            => true,
-					'hierarchical'      => true,
-					'show_in_rest'      => true,
-					'show_admin_column' => true,
-					'rewrite'           => array( 'slug' => sanitize_title( $group['slug'] ) ),
-				)
+				$args
 			);
 		}
+	}
+
+	/**
+	 * Prevent insertion of new destination terms outside internal predefined term seeding.
+	 *
+	 * @param string $term     The term name.
+	 * @param string $taxonomy The taxonomy slug.
+	 * @return string|WP_Error Unmodified term or WP_Error when locked.
+	 */
+	public function filter_pre_insert_term( $term, $taxonomy ) {
+		if ( $this->taxonomy_name_from_slug( 'destination' ) === $taxonomy && ! $this->is_seeding_terms ) {
+			return new WP_Error(
+				'destination_terms_locked',
+				__( 'Destination terms are locked. New destination terms cannot be created.', 'aths-business-packages' )
+			);
+		}
+
+		return $term;
 	}
 
 
@@ -1422,7 +1458,7 @@ class ATHSBP_Plugin {
 				'language' => $this->get_current_language(),
 				'vertical' => $this->get_settings()['default_vertical'],
 				'visible'  => $this->get_predefined_filter_visibility(),
-				'terms'    => 'travel-categories-descriptions-1',
+				'terms'    => 'destination-locked-032',
 			)
 		);
 
@@ -1653,43 +1689,49 @@ class ATHSBP_Plugin {
 	}
 
 	private function sync_predefined_terms() {
-		$term_sets = $this->get_predefined_term_sets();
+		$this->is_seeding_terms = true;
 
-		foreach ( $this->get_all_predefined_filter_groups() as $group ) {
-			if ( $this->is_range_filter_type( $group['input_type'] ) ) {
-				continue;
-			}
+		try {
+			$term_sets = $this->get_predefined_term_sets();
 
-			if ( empty( $term_sets[ $group['slug'] ] ) ) {
-				continue;
-			}
+			foreach ( $this->get_all_predefined_filter_groups() as $group ) {
+				if ( $this->is_range_filter_type( $group['input_type'] ) ) {
+					continue;
+				}
 
-			$taxonomy = $this->taxonomy_name_from_slug( $group['slug'] );
+				if ( empty( $term_sets[ $group['slug'] ] ) ) {
+					continue;
+				}
 
-			foreach ( $term_sets[ $group['slug'] ] as $term ) {
-				$existing = get_term_by( 'slug', $term['slug'], $taxonomy );
+				$taxonomy = $this->taxonomy_name_from_slug( $group['slug'] );
 
-				if ( $existing && ! is_wp_error( $existing ) ) {
-					wp_update_term(
-						$existing->term_id,
-						$taxonomy,
-						array(
-							'name'        => $term['name'],
-							'slug'        => $term['slug'],
-							'description' => isset( $term['description'] ) ? $term['description'] : '',
-						)
-					);
-				} else {
-					wp_insert_term(
-						$term['name'],
-						$taxonomy,
-						array(
-							'slug'        => $term['slug'],
-							'description' => isset( $term['description'] ) ? $term['description'] : '',
-						)
-					);
+				foreach ( $term_sets[ $group['slug'] ] as $term ) {
+					$existing = get_term_by( 'slug', $term['slug'], $taxonomy );
+
+					if ( $existing && ! is_wp_error( $existing ) ) {
+						wp_update_term(
+							$existing->term_id,
+							$taxonomy,
+							array(
+								'name'        => $term['name'],
+								'slug'        => $term['slug'],
+								'description' => isset( $term['description'] ) ? $term['description'] : '',
+							)
+						);
+					} else {
+						wp_insert_term(
+							$term['name'],
+							$taxonomy,
+							array(
+								'slug'        => $term['slug'],
+								'description' => isset( $term['description'] ) ? $term['description'] : '',
+							)
+						);
+					}
 				}
 			}
+		} finally {
+			$this->is_seeding_terms = false;
 		}
 	}
 
@@ -2260,17 +2302,431 @@ class ATHSBP_Plugin {
 			}
 		}
 
+		$dest_tax = $this->taxonomy_name_from_slug( 'destination' );
+		if ( taxonomy_exists( $dest_tax ) ) {
+			$assigned_dests = wp_get_object_terms( $post_id, $dest_tax, array( 'fields' => 'ids' ) );
+			if ( empty( $assigned_dests ) || is_wp_error( $assigned_dests ) ) {
+				if ( ! empty( $item['destination'] ) ) {
+					$meta_dest_id = $this->resolve_destination_term_id( $item['destination'] );
+					if ( $meta_dest_id > 0 ) {
+						wp_set_object_terms( $post_id, array( $meta_dest_id ), $dest_tax, false );
+						$assigned_dests = array( $meta_dest_id );
+					}
+				}
+			}
+
+			if ( empty( $assigned_dests ) || is_wp_error( $assigned_dests ) ) {
+				$inferred_id = $this->infer_destination_from_package_data( $post_id, $item );
+				if ( $inferred_id > 0 ) {
+					wp_set_object_terms( $post_id, array( $inferred_id ), $dest_tax, false );
+				}
+			}
+		}
+
 		return $post_id;
 	}
 
 	/**
+	 * Normalize a string for destination matching (dashes, whitespace, lowercase).
+	 *
+	 * @param string $string Raw string.
+	 * @return string Normalized string.
+	 */
+	public function normalize_destination_comparison_string( $string ) {
+		$string = (string) $string;
+		// Normalize unicode dashes (en-dash, em-dash, horizontal bar, minus) to ASCII hyphen.
+		$string = preg_replace( '/[\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}\x{2015}\x{2212}]/u', '-', $string );
+		// Normalize non-breaking spaces and collapse multiple whitespaces.
+		$string = preg_replace( '/[\s\x{00A0}]+/u', ' ', $string );
+		$string = trim( $string );
+
+		if ( function_exists( 'mb_strtolower' ) ) {
+			$string = mb_strtolower( $string, 'UTF-8' );
+		} else {
+			$string = strtolower( $string );
+		}
+
+		// Normalize Greek uppercase, lowercase accents, and final sigma for bulletproof matching
+		$greek_search  = array( 'Α', 'Β', 'Γ', 'Δ', 'Ε', 'Ζ', 'Η', 'Θ', 'Ι', 'Κ', 'Λ', 'Μ', 'Ν', 'Ξ', 'Ο', 'Π', 'Ρ', 'Σ', 'Τ', 'Υ', 'Φ', 'Χ', 'Ψ', 'Ω', 'Ά', 'Έ', 'Ή', 'Ί', 'Ό', 'Ύ', 'Ώ', 'Ϊ', 'Ϋ', 'ά', 'έ', 'ή', 'ί', 'ό', 'ύ', 'ώ', 'ϊ', 'ϋ', 'ΐ', 'ΰ', 'ς' );
+		$greek_replace = array( 'α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ', 'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω', 'α', 'ε', 'η', 'ι', 'ο', 'υ', 'ω', 'ι', 'υ', 'α', 'ε', 'η', 'ι', 'ο', 'υ', 'ω', 'ι', 'υ', 'ι', 'υ', 'σ' );
+		$string        = str_replace( $greek_search, $greek_replace, $string );
+
+		return $string;
+	}
+
+	/**
+	 * Get mapping of country slugs and names to predefined destination slugs.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_country_to_destination_map() {
+		return array(
+			// Greece
+			'greece'                           => 'greece',
+			'ελλάδα'                           => 'greece',
+
+			// Europe
+			'italy'                            => 'europe',
+			'ιταλία'                           => 'europe',
+			'france'                           => 'europe',
+			'γαλλία'                           => 'europe',
+			'spain'                            => 'europe',
+			'ισπανία'                          => 'europe',
+			'portugal'                         => 'europe',
+			'πορτογαλία'                       => 'europe',
+			'cyprus'                           => 'europe',
+			'κύπρος'                           => 'europe',
+			'malta'                            => 'europe',
+			'μάλτα'                            => 'europe',
+			'united-kingdom'                   => 'europe',
+			'uk'                               => 'europe',
+			'ηνωμένο βασίλειο'                 => 'europe',
+			'ireland'                          => 'europe',
+			'ιρλανδία'                         => 'europe',
+			'iceland'                          => 'europe',
+			'ισλανδία'                         => 'europe',
+			'norway'                           => 'europe',
+			'νορβηγία'                         => 'europe',
+			'sweden'                           => 'europe',
+			'σουηδία'                          => 'europe',
+			'finland'                          => 'europe',
+			'φινλανδία'                        => 'europe',
+			'denmark'                          => 'europe',
+			'δανία'                            => 'europe',
+			'netherlands'                      => 'europe',
+			'ολλανδία'                         => 'europe',
+			'belgium'                          => 'europe',
+			'βέλγιο'                           => 'europe',
+			'germany'                          => 'europe',
+			'γερμανία'                         => 'europe',
+			'austria'                          => 'europe',
+			'αυστρία'                          => 'europe',
+			'switzerland'                      => 'europe',
+			'ελβετία'                          => 'europe',
+			'czech-republic'                   => 'europe',
+			'τσεχία'                           => 'europe',
+			'hungary'                          => 'europe',
+			'ουγγαρία'                         => 'europe',
+			'poland'                           => 'europe',
+			'πολωνία'                          => 'europe',
+			'croatia'                          => 'europe',
+			'κροατία'                          => 'europe',
+			'slovenia'                         => 'europe',
+			'σλοβενία'                         => 'europe',
+			'montenegro'                       => 'europe',
+			'μαυροβούνιο'                      => 'europe',
+			'albania'                          => 'europe',
+			'αλβανία'                          => 'europe',
+			'serbia'                           => 'europe',
+			'σερβία'                           => 'europe',
+			'romania'                          => 'europe',
+			'ρουμανία'                         => 'europe',
+			'bulgaria'                         => 'europe',
+			'βουλγαρία'                        => 'europe',
+			'turkey'                           => 'europe',
+			'τουρκία'                          => 'europe',
+
+			// Africa - Indian Ocean
+			'morocco'                          => 'africa-indian-ocean',
+			'μαρόκο'                           => 'africa-indian-ocean',
+			'egypt'                            => 'africa-indian-ocean',
+			'αίγυπτος'                         => 'africa-indian-ocean',
+			'tunisia'                          => 'africa-indian-ocean',
+			'τυνησία'                          => 'africa-indian-ocean',
+			'south-africa'                     => 'africa-indian-ocean',
+			'νότια αφρική'                     => 'africa-indian-ocean',
+			'kenya'                            => 'africa-indian-ocean',
+			'κένυα'                            => 'africa-indian-ocean',
+			'tanzania'                         => 'africa-indian-ocean',
+			'τανζανία'                         => 'africa-indian-ocean',
+			'seychelles'                       => 'africa-indian-ocean',
+			'σεϋχέλλες'                        => 'africa-indian-ocean',
+			'mauritius'                        => 'africa-indian-ocean',
+			'μαυρίκιος'                        => 'africa-indian-ocean',
+			'madagascar'                       => 'africa-indian-ocean',
+			'μαδαγασκάρη'                      => 'africa-indian-ocean',
+
+			// Middle East
+			'united-arab-emirates'             => 'middle-east',
+			'uae'                              => 'middle-east',
+			'ηαε'                              => 'middle-east',
+			'ηνωμένα αραβικά εμιράτα'          => 'middle-east',
+			'jordan'                           => 'middle-east',
+			'ιορδανία'                         => 'middle-east',
+			'israel'                           => 'middle-east',
+			'ισραήλ'                           => 'middle-east',
+			'saudi-arabia'                     => 'middle-east',
+			'σαουδική αραβία'                  => 'middle-east',
+			'oman'                             => 'middle-east',
+			'ομάν'                             => 'middle-east',
+			'qatar'                            => 'middle-east',
+			'κατάρ'                            => 'middle-east',
+
+			// Indian Peninsula
+			'india'                            => 'indian-peninsula',
+			'ινδία'                            => 'indian-peninsula',
+			'nepal'                            => 'indian-peninsula',
+			'νεπάλ'                            => 'indian-peninsula',
+			'sri-lanka'                        => 'indian-peninsula',
+			'σρι λάνκα'                        => 'indian-peninsula',
+			'maldives'                         => 'indian-peninsula',
+			'μαλδίβες'                         => 'indian-peninsula',
+
+			// Southeast Asia
+			'thailand'                         => 'southeast-asia',
+			'ταϊλάνδη'                         => 'southeast-asia',
+			'vietnam'                          => 'southeast-asia',
+			'βιετνάμ'                          => 'southeast-asia',
+			'cambodia'                         => 'southeast-asia',
+			'καμπότζη'                         => 'southeast-asia',
+			'laos'                             => 'southeast-asia',
+			'λάος'                             => 'southeast-asia',
+			'malaysia'                         => 'southeast-asia',
+			'μαλαισία'                         => 'southeast-asia',
+			'singapore'                        => 'southeast-asia',
+			'σιγκαπούρη'                       => 'southeast-asia',
+			'indonesia'                        => 'southeast-asia',
+			'ινδονησία'                        => 'southeast-asia',
+			'philippines'                      => 'southeast-asia',
+			'φιλιππίνες'                       => 'southeast-asia',
+
+			// Far East
+			'japan'                            => 'far-east',
+			'ιαπωνία'                          => 'far-east',
+			'china'                            => 'far-east',
+			'κίνα'                             => 'far-east',
+			'south-korea'                      => 'far-east',
+			'νότια κορέα'                      => 'far-east',
+			'taiwan'                           => 'far-east',
+			'ταϊβάν'                           => 'far-east',
+			'hong-kong'                        => 'far-east',
+			'χονγκ κονγκ'                      => 'far-east',
+
+			// Australia - Oceania - Pacific
+			'australia'                        => 'australia-oceania-pacific',
+			'αυστραλία'                        => 'australia-oceania-pacific',
+			'new-zealand'                      => 'australia-oceania-pacific',
+			'νέα ζηλανδία'                     => 'australia-oceania-pacific',
+			'fiji'                             => 'australia-oceania-pacific',
+			'φίτζι'                            => 'australia-oceania-pacific',
+
+			// North - Central America & Caribbean
+			'united-states'                    => 'north-central-america-caribbean',
+			'usa'                              => 'north-central-america-caribbean',
+			'ηπα'                              => 'north-central-america-caribbean',
+			'ηνωμένες πολιτείες'               => 'north-central-america-caribbean',
+			'canada'                           => 'north-central-america-caribbean',
+			'καναδάς'                          => 'north-central-america-caribbean',
+			'mexico'                           => 'north-central-america-caribbean',
+			'μεξικό'                           => 'north-central-america-caribbean',
+			'cuba'                             => 'north-central-america-caribbean',
+			'κούβα'                            => 'north-central-america-caribbean',
+			'dominican-republic'               => 'north-central-america-caribbean',
+			'δομινικανή δημοκρατία'            => 'north-central-america-caribbean',
+			'jamaica'                          => 'north-central-america-caribbean',
+			'τζαμάικα'                         => 'north-central-america-caribbean',
+			'bahamas'                          => 'north-central-america-caribbean',
+			'μπαχάμες'                         => 'north-central-america-caribbean',
+			'costa-rica'                       => 'north-central-america-caribbean',
+			'κόστα ρίκα'                       => 'north-central-america-caribbean',
+			'panama'                           => 'north-central-america-caribbean',
+			'παναμάς'                          => 'north-central-america-caribbean',
+
+			// South America
+			'brazil'                           => 'south-america',
+			'βραζιλία'                         => 'south-america',
+			'argentina'                        => 'south-america',
+			'αργεντινή'                        => 'south-america',
+			'peru'                             => 'south-america',
+			'περού'                            => 'south-america',
+			'chile'                            => 'south-america',
+			'χιλή'                             => 'south-america',
+			'colombia'                         => 'south-america',
+			'κολομβία'                         => 'south-america',
+		);
+	}
+
+	/**
+	 * Resolve an arbitrary destination term input to an existing predefined destination term ID.
+	 * Strictly prevents creating new terms.
+	 *
+	 * @param mixed $term_val Term ID, slug, or name.
+	 * @return int Resolved term ID, or 0 if unresolvable.
+	 */
+	public function resolve_destination_term_id( $term_val ) {
+		$taxonomy = $this->taxonomy_name_from_slug( 'destination' );
+		if ( ! taxonomy_exists( $taxonomy ) ) {
+			return 0;
+		}
+
+		if ( is_numeric( $term_val ) && (int) $term_val > 0 ) {
+			$term_obj = get_term( (int) $term_val, $taxonomy );
+			if ( $term_obj && ! is_wp_error( $term_obj ) ) {
+				return (int) $term_obj->term_id;
+			}
+		}
+
+		$raw = trim( (string) $term_val );
+		if ( '' === $raw ) {
+			return 0;
+		}
+
+		$normalized     = $this->normalize_destination_comparison_string( $raw );
+		$slug_candidate = sanitize_title( $normalized );
+
+		$definitions = array(
+			'far-east'                        => array( 'en' => 'Far East', 'el' => 'Άπω Ανατολή' ),
+			'australia-oceania-pacific'       => array( 'en' => 'Australia - Oceania - Pacific', 'el' => 'Αυστραλία - Ωκεανία - Ειρηνικός' ),
+			'africa-indian-ocean'             => array( 'en' => 'Africa - Indian Ocean', 'el' => 'Αφρική - Ινδικός Ωκεανός' ),
+			'north-central-america-caribbean' => array( 'en' => 'North - Central America & Caribbean', 'el' => 'Βόρεια - Κεντρική Αμερική & Καραϊβική' ),
+			'greece'                          => array( 'en' => 'Greece', 'el' => 'Ελλάδα' ),
+			'europe'                          => array( 'en' => 'Europe', 'el' => 'Ευρώπη' ),
+			'indian-peninsula'                => array( 'en' => 'Indian Peninsula', 'el' => 'Ινδική Χερσόνησος' ),
+			'middle-east'                     => array( 'en' => 'Middle East', 'el' => 'Μέση Ανατολή' ),
+			'south-america'                   => array( 'en' => 'South America', 'el' => 'Νότια Αμερική' ),
+			'southeast-asia'                  => array( 'en' => 'Southeast Asia', 'el' => 'Νοτιοανατολική Ασία' ),
+		);
+
+		$matched_dest_slug = '';
+
+		// 1. Check direct match against predefined destination definitions
+		foreach ( $definitions as $d_slug => $d_names ) {
+			if ( $d_slug === $slug_candidate || $d_slug === $normalized ) {
+				$matched_dest_slug = $d_slug;
+				break;
+			}
+
+			$norm_en = $this->normalize_destination_comparison_string( $d_names['en'] );
+			$norm_el = $this->normalize_destination_comparison_string( $d_names['el'] );
+
+			if ( $normalized === $norm_en || $normalized === $norm_el ) {
+				$matched_dest_slug = $d_slug;
+				break;
+			}
+
+			if ( $slug_candidate === sanitize_title( $d_names['en'] ) || $slug_candidate === sanitize_title( $d_names['el'] ) ) {
+				$matched_dest_slug = $d_slug;
+				break;
+			}
+		}
+
+		// 2. Check country-to-destination fallback mapping
+		if ( '' === $matched_dest_slug ) {
+			$country_map = $this->get_country_to_destination_map();
+			foreach ( $country_map as $c_key => $target_dest ) {
+				$norm_c = $this->normalize_destination_comparison_string( $c_key );
+				if ( $normalized === $norm_c || $slug_candidate === $c_key || $slug_candidate === sanitize_title( $c_key ) ) {
+					$matched_dest_slug = $target_dest;
+					break;
+				}
+			}
+		}
+
+		// 3. If predefined destination slug found, retrieve existing term from WordPress
+		if ( '' !== $matched_dest_slug ) {
+			$found = get_term_by( 'slug', $matched_dest_slug, $taxonomy );
+			if ( $found && ! is_wp_error( $found ) ) {
+				return (int) $found->term_id;
+			}
+
+			if ( isset( $definitions[ $matched_dest_slug ] ) ) {
+				$by_el = get_term_by( 'name', $definitions[ $matched_dest_slug ]['el'], $taxonomy );
+				if ( $by_el && ! is_wp_error( $by_el ) ) {
+					return (int) $by_el->term_id;
+				}
+				$by_en = get_term_by( 'name', $definitions[ $matched_dest_slug ]['en'], $taxonomy );
+				if ( $by_en && ! is_wp_error( $by_en ) ) {
+					return (int) $by_en->term_id;
+				}
+			}
+		}
+
+		// 4. Check existing taxonomy terms in database
+		$existing_terms = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => false,
+			)
+		);
+
+		if ( ! empty( $existing_terms ) && ! is_wp_error( $existing_terms ) ) {
+			foreach ( $existing_terms as $ex_term ) {
+				$ex_norm = $this->normalize_destination_comparison_string( $ex_term->name );
+				if ( $normalized === $ex_norm || $slug_candidate === $ex_term->slug ) {
+					return (int) $ex_term->term_id;
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Infer a destination term ID from package country terms or item payload.
+	 *
+	 * @param int   $post_id Package post ID.
+	 * @param array $item    Package item payload.
+	 * @return int Inferred destination term ID or 0.
+	 */
+	public function infer_destination_from_package_data( $post_id, array $item ) {
+		$country_tax = $this->taxonomy_name_from_slug( 'country' );
+		if ( taxonomy_exists( $country_tax ) ) {
+			$country_terms = wp_get_object_terms( $post_id, $country_tax );
+			if ( ! empty( $country_terms ) && ! is_wp_error( $country_terms ) ) {
+				foreach ( $country_terms as $c_term ) {
+					$dest_id = $this->resolve_destination_term_id( $c_term->slug );
+					if ( $dest_id > 0 ) {
+						return $dest_id;
+					}
+					$dest_id = $this->resolve_destination_term_id( $c_term->name );
+					if ( $dest_id > 0 ) {
+						return $dest_id;
+					}
+				}
+			}
+		}
+
+		$keys = array( 'countries', 'country', 'badge_text' );
+		foreach ( $keys as $k ) {
+			if ( empty( $item[ $k ] ) ) {
+				continue;
+			}
+			$vals = is_array( $item[ $k ] ) ? $item[ $k ] : array( $item[ $k ] );
+			foreach ( $vals as $v ) {
+				$dest_id = $this->resolve_destination_term_id( $v );
+				if ( $dest_id > 0 ) {
+					return $dest_id;
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	/**
 	 * Assign term names or IDs to a package, creating missing terms if needed.
+	 * For destination taxonomy (athsbp_destination), terms are locked to predefined options and never created.
 	 *
 	 * @param int    $post_id  Package post ID.
 	 * @param string $taxonomy Taxonomy identifier.
 	 * @param array  $terms    List of term names or IDs.
 	 */
 	public function assign_terms_to_package( $post_id, $taxonomy, array $terms ) {
+		$dest_tax = $this->taxonomy_name_from_slug( 'destination' );
+		if ( $taxonomy === $dest_tax ) {
+			$term_ids = array();
+			foreach ( $terms as $term_val ) {
+				$dest_id = $this->resolve_destination_term_id( $term_val );
+				if ( $dest_id > 0 ) {
+					$term_ids[] = $dest_id;
+				}
+			}
+			if ( ! empty( $term_ids ) ) {
+				wp_set_object_terms( $post_id, array_unique( $term_ids ), $taxonomy, false );
+			}
+			return;
+		}
+
 		$term_ids = array();
 
 		foreach ( $terms as $term_val ) {
