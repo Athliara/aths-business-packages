@@ -2,18 +2,20 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.3.3`
+Current version: `0.3.4`
 
 ## What this version includes
 
-- Importer bug fix & title length enforcement: strictly capped package titles to 60 characters to ensure 100% compatibility with WordPress publishing and SEO Meta Title limits
+- Importer database insertion hardening: resolved `db_insert_error` caused by database column overflows on long percent-encoded non-ASCII/Greek slugs and unicode punctuation
+- Slug length bounding: automatically limits generated package slugs to 120 characters via `_truncate_post_slug()` to safely avoid MySQL `varchar(200)` limits when appending uniqueness suffixes
+- Unicode dash normalization: automatically sanitizes unicode dashes (en-dash `–`, em-dash `—`, minus) into standard hyphens in titles and slugs
+- Complete core post defaults: explicitly sets `post_name`, `post_author`, `post_content`, `comment_status`, and `ping_status` with automatic fallback retry as `draft`
+- Detailed database error reporting: captures and surfaces underlying MySQL error strings in importer admin notices
+- Importer title length enforcement: strictly capped package titles to 60 characters for WordPress publishing and SEO Meta Title limits
 - SEO Meta Description support across the importer, package editor, and REST/save hooks with language-aware fallbacks from package subtitles or itineraries
 - SEO plugin synchronization: auto-syncs descriptions and titles with `post_excerpt`, Rank Math (`rank_math_description`, `rank_math_title`), Yoast SEO (`_yoast_wpseo_metadesc`, `_yoast_wpseo_title`), All in One SEO, and SEOPress
 - Package editor SEO Meta Description fields in both Greek and English Translations tabs with one-click auto-translation support
 - Updated AI Agent Import instructions and reference JSON template mandating max 60-character titles and SEO meta descriptions
-- Locked Destination filter taxonomy (`athsbp_destination` / `Προορισμοί`) preventing unauthorized category creation in admin
-- Hardened package importer to strictly choose from predefined destination terms with unicode dash normalization
-- Smart country-to-destination inference mapping regional destinations from package country data
 
 - Native multilingual translation support with seamless language switching and graceful fallback for monolingual setups
 - Dedicated `Translations (EN)` tab in the package editor for titles, subtitles, itineraries, inclusions, exclusions, notes, and tables

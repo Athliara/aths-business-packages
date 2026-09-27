@@ -2259,21 +2259,29 @@ class ATHSBP_Plugin {
 			return new WP_Error( 'missing_title', __( 'Each package must have a valid title.', 'aths-business-packages' ) );
 		}
 
+		// Normalize unicode dashes (en-dash, em-dash, etc.) to standard ASCII hyphen
+		$raw_title = preg_replace( '/[\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}\x{2015}\x{2212}]/u', '-', $raw_title );
+
 		// Enforce maximum 60 characters for SEO Meta Title & WordPress publishing compatibility
 		if ( function_exists( 'mb_strlen' ) && mb_strlen( $raw_title, 'UTF-8' ) > 60 ) {
 			$title = mb_substr( $raw_title, 0, 60, 'UTF-8' );
+		} elseif ( function_exists( 'mb_substr' ) ) {
+			$title = $raw_title;
 		} elseif ( strlen( $raw_title ) > 60 ) {
 			$title = substr( $raw_title, 0, 60 );
+			$title = preg_replace( '/[\x80-\xBF]+$/', '', $title );
 		} else {
 			$title = $raw_title;
 		}
 
 		if ( ! empty( $item['title_en'] ) ) {
-			$raw_title_en = trim( (string) $item['title_en'] );
+			$raw_title_en = preg_replace( '/[\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}\x{2015}\x{2212}]/u', '-', trim( (string) $item['title_en'] ) );
 			if ( function_exists( 'mb_strlen' ) && mb_strlen( $raw_title_en, 'UTF-8' ) > 60 ) {
 				$item['title_en'] = mb_substr( $raw_title_en, 0, 60, 'UTF-8' );
 			} elseif ( strlen( $raw_title_en ) > 60 ) {
 				$item['title_en'] = substr( $raw_title_en, 0, 60 );
+			} else {
+				$item['title_en'] = $raw_title_en;
 			}
 		}
 
@@ -2300,15 +2308,44 @@ class ATHSBP_Plugin {
 
 		$status = in_array( $post_status, array( 'publish', 'draft' ), true ) ? $post_status : 'publish';
 
-		$post_id = wp_insert_post(
-			array(
-				'post_title'   => sanitize_text_field( $title ),
-				'post_type'    => self::CPT,
-				'post_status'  => $status,
-				'post_excerpt' => $meta_description,
-			),
-			true
+		// Generate a safe, bounded slug (max 120 chars) to prevent MySQL varchar(200) column overflow with percent-encoded non-ASCII characters
+		$slug_title     = str_replace( array( '&', '+' ), ' ', $title );
+		$slug_candidate = sanitize_title( $slug_title );
+		if ( function_exists( '_truncate_post_slug' ) ) {
+			$safe_slug = _truncate_post_slug( $slug_candidate, 120 );
+		} elseif ( strlen( $slug_candidate ) > 120 ) {
+			$safe_slug = rtrim( substr( $slug_candidate, 0, 120 ), '-%' );
+		} else {
+			$safe_slug = $slug_candidate;
+		}
+
+		$author_id = get_current_user_id();
+		if ( ! $author_id ) {
+			$author_id = 1;
+		}
+
+		$post_arr = array(
+			'post_title'     => sanitize_text_field( $title ),
+			'post_name'      => $safe_slug,
+			'post_type'      => self::CPT,
+			'post_status'    => $status,
+			'post_author'    => $author_id,
+			'post_content'   => ! empty( $item['description_content'] ) ? wp_kses_post( $item['description_content'] ) : '',
+			'post_excerpt'   => $meta_description,
+			'comment_status' => 'closed',
+			'ping_status'    => 'closed',
 		);
+
+		$post_id = wp_insert_post( $post_arr, true );
+
+		// Fallback retry as draft if publish status encounters permission or transition restrictions
+		if ( is_wp_error( $post_id ) && 'publish' === $status ) {
+			$post_arr['post_status'] = 'draft';
+			$retry_id                = wp_insert_post( $post_arr, true );
+			if ( ! is_wp_error( $retry_id ) ) {
+				$post_id = $retry_id;
+			}
+		}
 
 		if ( is_wp_error( $post_id ) ) {
 			return $post_id;
@@ -2858,7 +2895,14 @@ class ATHSBP_Plugin {
 			if ( is_wp_error( $result ) ) {
 				/* translators: %d: 1-based package item index number */
 				$item_title = ! empty( $item['title'] ) ? $item['title'] : sprintf( __( 'Item #%d', 'aths-business-packages' ), $index + 1 );
-				$errors[]   = sprintf( '%s: %s', $item_title, $result->get_error_message() );
+				$err_data   = $result->get_error_data();
+				$err_extra  = '';
+				if ( is_string( $err_data ) && '' !== trim( $err_data ) ) {
+					$err_extra = ' (' . trim( $err_data ) . ')';
+				} elseif ( is_array( $err_data ) && ! empty( $err_data ) ) {
+					$err_extra = ' (' . wp_json_encode( $err_data ) . ')';
+				}
+				$errors[]   = sprintf( '%s: %s%s', $item_title, $result->get_error_message(), $err_extra );
 			} else {
 				$created[] = array(
 					'id'    => $result,

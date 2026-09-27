@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.3.3
+Stable tag: 0.3.4
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -68,6 +68,14 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+= 0.3.4 =
+
+* Database Insertion Hardening & Bug Fix: Fixed package importer `db_insert_error` ("Could not insert post into the database") caused by database column overflow on percent-encoded non-ASCII/Greek slugs and unicode punctuation.
+* Slug Length Bounding: Automatically bounds generated package post slugs to max 120 characters via `_truncate_post_slug()`, preventing MySQL `varchar(200)` overflows when appending uniqueness suffixes (`-2`, `-3`).
+* Unicode Dash Normalization: Automatically converts unicode dashes (en-dash, em-dash, horizontal bar, minus) in titles and slugs into standard hyphens.
+* Robust Post Insertion Defaults: Explicitly populates `post_name`, `post_author`, `post_content`, `comment_status`, and `ping_status` during import, with automatic fallback retry as `draft` if publishing hooks or status restrictions fail.
+* Enhanced Error Diagnostics: Captures and displays underlying MySQL database errors in admin import notices when post creation fails.
 
 = 0.3.3 =
 
