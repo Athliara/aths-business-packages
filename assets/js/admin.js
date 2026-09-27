@@ -544,6 +544,7 @@
 				if (typeof data.nights_en !== 'undefined') $('#abp-nights-en').val(data.nights_en);
 				if (typeof data.duration_en !== 'undefined') $('#abp-duration-en').val(data.duration_en);
 				if (typeof data.price_note_en !== 'undefined') $('#abp-price-note-en').val(data.price_note_en);
+				if (typeof data.meta_description_en !== 'undefined') $('#abp-meta-description-en').val(data.meta_description_en);
 
 				setEditorValue('abp_description_content_en', data.description_content_en);
 				setEditorValue('abp_includes_content_en', data.includes_content_en);

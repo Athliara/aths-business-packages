@@ -1,5 +1,5 @@
 {
-  "title": "[TEXT - The main package title, e.g. Μαρόκο 9 Ημέρες]",
+  "title": "[TEXT - Max 60 chars. The concise main package title, e.g. Μαρόκο 9 Ημέρες]",
   "subtitle": "[TEXT - Subtitle displayed under the title on the single page]",
   "card_subtitle": "[TEXT - Short subtitle shown on the package card grid, e.g. 9 ημέρες / 7 νύχτες]",
   "badge_text": "[TEXT - Custom badge text on the card. Leave empty to auto-use Country name]",
@@ -11,6 +11,7 @@
   "nights": "[TEXT - Primary field: number of nights, e.g. 8 διανυκτερεύσεις. Duration is automatically derived as nights + 1]",
   "duration": "[TEXT - Optional. e.g. 9 ημέρες. If left empty, it is automatically calculated as nights + 1]",
   "expiration_date": "[DATE string in YYYY-MM-DD format - Package automatically hides after this date, e.g. 2026-10-31]",
+  "meta_description": "[TEXT - SEO Meta Description for search engines, max 155-160 chars. Base on package language (Greek or English). Leave empty to auto-derive from subtitle]",
   "description_title": "Προορισμός / Περιγραφή",
   "description_content": "[HTML - The main descriptive daily program / itinerary. Use standard paragraph (<p>), bold (<strong>), and italic (<em>) tags]",
   "includes_title": "Τι περιλαμβάνεται",

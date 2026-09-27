@@ -14,7 +14,53 @@ class ATHSBP_Frontend {
 		$this->plugin = $plugin;
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		add_action( 'wp_head', array( $this, 'output_package_meta_tags' ), 1 );
 		add_shortcode( 'athsbp_packages', array( $this, 'render_packages_shortcode' ) );
+	}
+
+	/**
+	 * Output SEO meta description tag in wp_head on single package pages if no SEO plugin is active.
+	 */
+	public function output_package_meta_tags() {
+		if ( ! is_singular( ATHSBP_Plugin::CPT ) ) {
+			return;
+		}
+
+		// Avoid duplicate meta description if standard SEO plugins are active
+		if ( defined( 'WPSEO_VERSION' ) || defined( 'RANK_MATH_VERSION' ) || defined( 'AIOSEO_VERSION' ) || defined( 'SEOPRESS_VERSION' ) ) {
+			return;
+		}
+
+		$post_id = get_the_ID();
+		if ( ! $post_id ) {
+			return;
+		}
+
+		$meta     = $this->plugin->get_package_meta( $post_id );
+		$language = $this->plugin->get_current_language();
+
+		$desc = '';
+		if ( 'en' === $language && ! empty( $meta['meta_description_en'] ) ) {
+			$desc = $meta['meta_description_en'];
+		} elseif ( ! empty( $meta['meta_description'] ) ) {
+			$desc = $meta['meta_description'];
+		} elseif ( has_excerpt( $post_id ) ) {
+			$desc = get_the_excerpt( $post_id );
+		} elseif ( ! empty( $meta['subtitle'] ) ) {
+			$desc = $meta['subtitle'];
+		}
+
+		$desc = wp_strip_all_tags( $desc );
+		$desc = preg_replace( '/\s+/', ' ', trim( $desc ) );
+
+		if ( '' !== $desc ) {
+			if ( function_exists( 'mb_strlen' ) && mb_strlen( $desc, 'UTF-8' ) > 160 ) {
+				$desc = mb_substr( $desc, 0, 157, 'UTF-8' ) . '...';
+			} elseif ( strlen( $desc ) > 160 ) {
+				$desc = substr( $desc, 0, 157 ) . '...';
+			}
+			echo '<meta name="description" content="' . esc_attr( $desc ) . '">' . "\n";
+		}
 	}
 
 	public function register_assets() {

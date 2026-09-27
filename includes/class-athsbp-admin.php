@@ -891,6 +891,11 @@ class ATHSBP_Admin {
 						<input id="abp-expiration-date" type="date" name="athsbp_meta[expiration_date]" value="<?php echo esc_attr( $meta['expiration_date'] ); ?>" class="widefat">
 						<p class="description"><?php echo esc_html( $labels['expiration_date_desc'] ); ?></p>
 					</div>
+					<div class="abp-field abp-field-wide" style="grid-column: 1 / -1;">
+						<label for="abp-meta-description"><?php echo esc_html( $labels['meta_description'] ); ?></label>
+						<textarea id="abp-meta-description" name="athsbp_meta[meta_description]" rows="2" class="widefat" maxlength="200"><?php echo esc_textarea( $meta['meta_description'] ); ?></textarea>
+						<p class="description"><?php echo esc_html( $labels['meta_description_desc'] ); ?></p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -1118,6 +1123,10 @@ class ATHSBP_Admin {
 					<div class="abp-field">
 						<label for="abp-price-note-en"><?php echo esc_html( $labels['price_note_en'] ); ?></label>
 						<input id="abp-price-note-en" type="text" name="athsbp_meta[price_note_en]" value="<?php echo esc_attr( $meta['price_note_en'] ); ?>" class="widefat">
+					</div>
+					<div class="abp-field abp-field-wide" style="grid-column: 1 / -1;">
+						<label for="abp-meta-description-en"><?php echo esc_html( $labels['meta_description_en'] ); ?></label>
+						<textarea id="abp-meta-description-en" name="athsbp_meta[meta_description_en]" rows="2" class="widefat" maxlength="200"><?php echo esc_textarea( $meta['meta_description_en'] ); ?></textarea>
 					</div>
 				</div>
 
@@ -1539,6 +1548,9 @@ class ATHSBP_Admin {
 				'general_info_en'           => 'Γενικές Πληροφορίες (Αγγλικά)',
 				'tables_en'                 => 'Πίνακες Πακέτου (Αγγλικά)',
 				'tables_en_desc'            => 'Ένας πίνακας ανά ενότητα. Οι στήλες χωρίζονται με | και κάθε γραμμή αντιστοιχεί σε μία σειρά του πίνακα. Χρησιμοποιήστε --- για διαχωρισμό πολλαπλών πινάκων.',
+				'meta_description'          => 'SEO Meta Description',
+				'meta_description_desc'     => 'Σύντομη περιγραφή για τις μηχανές αναζήτησης (προτεινόμενο έως 155-160 χαρακτήρες). Αν μείνει κενό, χρησιμοποιείται αυτόματα ο υπότιτλος ή απόσπασμα της περιγραφής.',
+				'meta_description_en'       => 'SEO Meta Description (Αγγλικά)',
 			);
 		}
 
@@ -1635,6 +1647,9 @@ class ATHSBP_Admin {
 			'general_info_en'           => 'General Information (English)',
 			'tables_en'                 => 'Package Tables (English)',
 			'tables_en_desc'            => 'One table per section. Columns separated by | and each line represents a row. Use --- to separate multiple tables.',
+			'meta_description'          => 'SEO Meta Description',
+			'meta_description_desc'     => 'Short summary for search engines (recommended max 155-160 chars). If left empty, subtitle or description excerpt is used automatically.',
+			'meta_description_en'       => 'SEO Meta Description (English)',
 		);
 	}
 
@@ -1669,6 +1684,7 @@ class ATHSBP_Admin {
 			'includes_content_en'     => ! empty( $meta['includes_content'] ) ? $this->plugin->auto_translate_text( $meta['includes_content'], 'el', 'en' ) : '',
 			'excludes_content_en'     => ! empty( $meta['excludes_content'] ) ? $this->plugin->auto_translate_text( $meta['excludes_content'], 'el', 'en' ) : '',
 			'general_info_content_en' => ! empty( $meta['general_info_content'] ) ? $this->plugin->auto_translate_text( $meta['general_info_content'], 'el', 'en' ) : '',
+			'meta_description_en'     => ! empty( $meta['meta_description'] ) ? $this->plugin->auto_translate_text( $meta['meta_description'], 'el', 'en' ) : '',
 		);
 
 		// Translate package tables line by line

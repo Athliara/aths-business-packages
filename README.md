@@ -2,16 +2,18 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.3.2`
+Current version: `0.3.3`
 
 ## What this version includes
 
+- Importer bug fix & title length enforcement: strictly capped package titles to 60 characters to ensure 100% compatibility with WordPress publishing and SEO Meta Title limits
+- SEO Meta Description support across the importer, package editor, and REST/save hooks with language-aware fallbacks from package subtitles or itineraries
+- SEO plugin synchronization: auto-syncs descriptions and titles with `post_excerpt`, Rank Math (`rank_math_description`, `rank_math_title`), Yoast SEO (`_yoast_wpseo_metadesc`, `_yoast_wpseo_title`), All in One SEO, and SEOPress
+- Package editor SEO Meta Description fields in both Greek and English Translations tabs with one-click auto-translation support
+- Updated AI Agent Import instructions and reference JSON template mandating max 60-character titles and SEO meta descriptions
 - Locked Destination filter taxonomy (`athsbp_destination` / `Προορισμοί`) preventing unauthorized category creation in admin
 - Hardened package importer to strictly choose from predefined destination terms with unicode dash normalization
 - Smart country-to-destination inference mapping regional destinations from package country data
-- Direct "AI Import" submenu link under Settings with synchronized menu highlighting
-- Updated AI package extraction instructions mandating downloadable `.json` file outputs and strict existing filter matching
-- Enhanced term assignment with case-insensitive fallback matching before creating new terms
 
 - Native multilingual translation support with seamless language switching and graceful fallback for monolingual setups
 - Dedicated `Translations (EN)` tab in the package editor for titles, subtitles, itineraries, inclusions, exclusions, notes, and tables

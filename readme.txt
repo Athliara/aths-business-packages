@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.3.2
+Stable tag: 0.3.3
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -68,6 +68,14 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+= 0.3.3 =
+
+* Importer Bug Fix & Title Length Limit: Enforced strict 60-character limit on package titles in AI import instructions and package importer, preventing publishing errors and truncated SEO titles in WordPress.
+* SEO Meta Description Support: Added `meta_description` (and multilingual `meta_description_en`) support across the importer, package editor, and REST/save actions. Automatically derives fallback search engine snippets from package subtitles or itineraries when omitted.
+* SEO Plugin & Theme Synchronization: Automatically synchronizes meta descriptions and titles to `post_excerpt`, Rank Math (`rank_math_description`, `rank_math_title`), Yoast SEO (`_yoast_wpseo_metadesc`, `_yoast_wpseo_title`), All in One SEO, and SEOPress, with frontend `<meta name="description">` fallback tag for single package pages.
+* Package Editor Enhancements: Added dedicated SEO Meta Description inputs in both primary and English Translations tabs, with one-click auto-translation integration.
+* Updated AI Package Instructions: Updated bundled prompt and downloadable guide to mandate max 60-character titles and SEO meta descriptions matching the package language.
 
 = 0.3.2 =
 

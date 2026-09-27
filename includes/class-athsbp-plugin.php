@@ -820,6 +820,8 @@ class ATHSBP_Plugin {
 			'general_info_title_en'   => '',
 			'general_info_content_en' => '',
 			'includes_tables_en'      => array(),
+			'meta_description'        => '',
+			'meta_description_en'     => '',
 		);
 
 		$meta = get_post_meta( $post_id, self::META_KEY, true );
@@ -2038,9 +2040,18 @@ class ATHSBP_Plugin {
 			'general_info_title_en'   => isset( $raw_meta['general_info_title_en'] ) ? sanitize_text_field( $raw_meta['general_info_title_en'] ) : '',
 			'general_info_content_en' => isset( $raw_meta['general_info_content_en'] ) ? wp_kses_post( $raw_meta['general_info_content_en'] ) : '',
 			'includes_tables_en'      => $includes_tables_en,
+			'meta_description'        => isset( $raw_meta['meta_description'] ) ? sanitize_text_field( $raw_meta['meta_description'] ) : '',
+			'meta_description_en'     => isset( $raw_meta['meta_description_en'] ) ? sanitize_text_field( $raw_meta['meta_description_en'] ) : '',
 		);
 
 		update_post_meta( $post_id, self::META_KEY, $meta );
+
+		if ( '' !== $meta['meta_description'] ) {
+			update_post_meta( $post_id, 'rank_math_description', $meta['meta_description'] );
+			update_post_meta( $post_id, '_yoast_wpseo_metadesc', $meta['meta_description'] );
+			update_post_meta( $post_id, '_aioseo_description', $meta['meta_description'] );
+			update_post_meta( $post_id, '_seopress_titles_desc', $meta['meta_description'] );
+		}
 
 		if ( '' !== $meta['expiration_date'] ) {
 			update_post_meta( $post_id, self::EXPIRATION_DATE_META_KEY, $meta['expiration_date'] );
@@ -2243,24 +2254,74 @@ class ATHSBP_Plugin {
 	 * @return int|WP_Error Post ID or WP_Error.
 	 */
 	public function import_single_package( array $item, $post_status = 'publish' ) {
-		$title = isset( $item['title'] ) ? trim( (string) $item['title'] ) : '';
-		if ( '' === $title ) {
+		$raw_title = isset( $item['title'] ) ? trim( (string) $item['title'] ) : '';
+		if ( '' === $raw_title ) {
 			return new WP_Error( 'missing_title', __( 'Each package must have a valid title.', 'aths-business-packages' ) );
 		}
+
+		// Enforce maximum 60 characters for SEO Meta Title & WordPress publishing compatibility
+		if ( function_exists( 'mb_strlen' ) && mb_strlen( $raw_title, 'UTF-8' ) > 60 ) {
+			$title = mb_substr( $raw_title, 0, 60, 'UTF-8' );
+		} elseif ( strlen( $raw_title ) > 60 ) {
+			$title = substr( $raw_title, 0, 60 );
+		} else {
+			$title = $raw_title;
+		}
+
+		if ( ! empty( $item['title_en'] ) ) {
+			$raw_title_en = trim( (string) $item['title_en'] );
+			if ( function_exists( 'mb_strlen' ) && mb_strlen( $raw_title_en, 'UTF-8' ) > 60 ) {
+				$item['title_en'] = mb_substr( $raw_title_en, 0, 60, 'UTF-8' );
+			} elseif ( strlen( $raw_title_en ) > 60 ) {
+				$item['title_en'] = substr( $raw_title_en, 0, 60 );
+			}
+		}
+
+		// SEO Meta Description: use provided value or derive fallback from subtitle or description
+		$meta_description = '';
+		if ( ! empty( $item['meta_description'] ) ) {
+			$meta_description = sanitize_text_field( $item['meta_description'] );
+		} elseif ( ! empty( $item['subtitle'] ) ) {
+			$meta_description = sanitize_text_field( $item['subtitle'] );
+		} elseif ( ! empty( $item['description_content'] ) ) {
+			$meta_description = sanitize_text_field( wp_strip_all_tags( $item['description_content'] ) );
+		}
+
+		if ( '' !== $meta_description ) {
+			$meta_description = preg_replace( '/\s+/', ' ', trim( $meta_description ) );
+			if ( function_exists( 'mb_strlen' ) && mb_strlen( $meta_description, 'UTF-8' ) > 160 ) {
+				$meta_description = mb_substr( $meta_description, 0, 157, 'UTF-8' ) . '...';
+			} elseif ( strlen( $meta_description ) > 160 ) {
+				$meta_description = substr( $meta_description, 0, 157 ) . '...';
+			}
+		}
+
+		$item['meta_description'] = $meta_description;
 
 		$status = in_array( $post_status, array( 'publish', 'draft' ), true ) ? $post_status : 'publish';
 
 		$post_id = wp_insert_post(
 			array(
-				'post_title'  => sanitize_text_field( $title ),
-				'post_type'   => self::CPT,
-				'post_status' => $status,
+				'post_title'   => sanitize_text_field( $title ),
+				'post_type'    => self::CPT,
+				'post_status'  => $status,
+				'post_excerpt' => $meta_description,
 			),
 			true
 		);
 
 		if ( is_wp_error( $post_id ) ) {
 			return $post_id;
+		}
+
+		// Sync SEO titles and descriptions for common SEO plugins
+		update_post_meta( $post_id, 'rank_math_title', $title );
+		update_post_meta( $post_id, '_yoast_wpseo_title', '%%title%%' );
+		if ( '' !== $meta_description ) {
+			update_post_meta( $post_id, 'rank_math_description', $meta_description );
+			update_post_meta( $post_id, '_yoast_wpseo_metadesc', $meta_description );
+			update_post_meta( $post_id, '_aioseo_description', $meta_description );
+			update_post_meta( $post_id, '_seopress_titles_desc', $meta_description );
 		}
 
 		$this->save_package_meta_fields( $post_id, $item );
