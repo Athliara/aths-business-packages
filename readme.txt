@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.3.4
+Stable tag: 0.3.5
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -68,6 +68,13 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+= 0.3.5 =
+
+* Strictly Latin Slugs (Greeklish Transliteration): Enforced a strict rule that package URL slugs (permalinks) must ALWAYS be in lowercase Latin letters (`a-z0-9-`).
+* Automatic Greek Transliteration: Added `latinize_slug()` with a comprehensive Greek-to-Latin mapping (diphthongs, uppercase/lowercase accents, and final sigma), converting Greek titles into clean, readable, SEO-optimized Latin slugs (e.g. "Ηράκλειο - Κωνσταντινούπολη" -> "irakleio-konstantinoupoli").
+* Core Hook Latin Slug Enforcement: Hooked `wp_insert_post_data` for packages, ensuring any package post created or updated (via importer, REST API, or WP admin) always maintains clean Latin slugs with zero percent-encoded octets.
+* AI Package Importer & Instructions: Added `slug` field support to AI package instructions, template, and importer, allowing explicit custom Latin slugs while automatically generating them if omitted.
 
 = 0.3.4 =
 

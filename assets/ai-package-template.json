@@ -1,5 +1,6 @@
 {
   "title": "[TEXT - Max 60 chars. The concise main package title, e.g. Μαρόκο 9 Ημέρες]",
+  "slug": "[TEXT - Lowercase Latin letters only (a-z0-9-), e.g. maroko-9-imeres. Optional, auto-generated if omitted]",
   "subtitle": "[TEXT - Subtitle displayed under the title on the single page]",
   "card_subtitle": "[TEXT - Short subtitle shown on the package card grid, e.g. 9 ημέρες / 7 νύχτες]",
   "badge_text": "[TEXT - Custom badge text on the card. Leave empty to auto-use Country name]",

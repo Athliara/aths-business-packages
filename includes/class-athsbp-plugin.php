@@ -71,6 +71,7 @@ class ATHSBP_Plugin {
 		add_filter( 'the_title', array( $this, 'filter_package_title' ), 10, 2 );
 		add_filter( 'plugin_action_links_' . plugin_basename( ATHSBP_PLUGIN_FILE ), array( $this, 'add_plugin_action_links' ) );
 		add_filter( 'pre_insert_term', array( $this, 'filter_pre_insert_term' ), 10, 2 );
+		add_filter( 'wp_insert_post_data', array( $this, 'filter_package_post_data_latin_slug' ), 10, 2 );
 	}
 
 	public function activate() {
@@ -2308,15 +2309,18 @@ class ATHSBP_Plugin {
 
 		$status = in_array( $post_status, array( 'publish', 'draft' ), true ) ? $post_status : 'publish';
 
-		// Generate a safe, bounded slug (max 120 chars) to prevent MySQL varchar(200) column overflow with percent-encoded non-ASCII characters
-		$slug_title     = str_replace( array( '&', '+' ), ' ', $title );
-		$slug_candidate = sanitize_title( $slug_title );
-		if ( function_exists( '_truncate_post_slug' ) ) {
-			$safe_slug = _truncate_post_slug( $slug_candidate, 120 );
-		} elseif ( strlen( $slug_candidate ) > 120 ) {
-			$safe_slug = rtrim( substr( $slug_candidate, 0, 120 ), '-%' );
+		// Generate a safe, bounded slug (max 120 chars) strictly in Latin characters (Greeklish transliteration)
+		if ( ! empty( $item['slug'] ) ) {
+			$slug_source = (string) $item['slug'];
+		} elseif ( ! empty( $item['title_en'] ) ) {
+			$slug_source = (string) $item['title_en'];
 		} else {
-			$safe_slug = $slug_candidate;
+			$slug_source = $title;
+		}
+
+		$safe_slug = $this->latinize_slug( $slug_source, 120 );
+		if ( '' === $safe_slug ) {
+			$safe_slug = 'package';
 		}
 
 		$author_id = get_current_user_id();
@@ -2422,6 +2426,139 @@ class ATHSBP_Plugin {
 		}
 
 		return $post_id;
+	}
+
+	/**
+	 * Filter package post data on insert/update to ensure slugs are always in lowercase Latin letters.
+	 *
+	 * @param array $data    Processed post data.
+	 * @param array $postarr Unmodified post data.
+	 * @return array
+	 */
+	public function filter_package_post_data_latin_slug( $data, $postarr ) {
+		if ( ! isset( $data['post_type'] ) || self::CPT !== $data['post_type'] ) {
+			return $data;
+		}
+
+		$current_slug = isset( $data['post_name'] ) ? trim( (string) $data['post_name'] ) : '';
+		$title_source = isset( $data['post_title'] ) ? trim( (string) $data['post_title'] ) : '';
+
+		// If slug is empty or contains non-ASCII characters or percent-encoded octets
+		if ( '' === $current_slug || preg_match( '/[^a-z0-9\-_]/i', $current_slug ) || false !== strpos( $current_slug, '%' ) ) {
+			$raw_to_latinize = ( '' !== $current_slug ) ? urldecode( $current_slug ) : $title_source;
+			$latin_slug      = $this->latinize_slug( $raw_to_latinize, 120 );
+			if ( '' !== $latin_slug ) {
+				$data['post_name'] = $latin_slug;
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Transliterate any string (especially Greek) into clean, lowercase Latin letters for URL slugs.
+	 *
+	 * @param string $string     Raw string or title.
+	 * @param int    $max_length Maximum character length (default 120).
+	 * @return string Clean Latin slug containing only a-z, 0-9, and single hyphens.
+	 */
+	public function latinize_slug( $string, $max_length = 120 ) {
+		$string = (string) $string;
+		if ( '' === trim( $string ) ) {
+			return '';
+		}
+
+		// Normalize unicode dashes (en-dash, em-dash, horizontal bar, minus) to ASCII hyphen
+		$string = preg_replace( '/[\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}\x{2015}\x{2212}]/u', '-', $string );
+
+		// Remove accents from Latin characters if WordPress remove_accents is available
+		if ( function_exists( 'remove_accents' ) ) {
+			$string = remove_accents( $string );
+		}
+
+		// Use PHP intl transliterator if available
+		if ( function_exists( 'transliterator_transliterate' ) ) {
+			$intl_result = transliterator_transliterate( 'Any-Latin; Latin-ASCII; Lower()', $string );
+			if ( false !== $intl_result && '' !== trim( $intl_result ) ) {
+				$string = $intl_result;
+			}
+		}
+
+		// Comprehensive Greek diphthongs and character transliteration map
+		$greek_map = array(
+			// Diphthongs
+			'ΑΙ' => 'ai', 'Αί' => 'ai', 'αι' => 'ai', 'αί' => 'ai',
+			'ΕΙ' => 'ei', 'Εί' => 'ei', 'ει' => 'ei', 'εί' => 'ei',
+			'ΟΙ' => 'oi', 'Οί' => 'oi', 'οι' => 'oi', 'οί' => 'oi',
+			'ΟΥ' => 'ou', 'Ού' => 'ou', 'ου' => 'ou', 'ού' => 'ou',
+			'ΑΥ' => 'av', 'Αύ' => 'av', 'αυ' => 'av', 'αύ' => 'av',
+			'ΕΥ' => 'ev', 'Εύ' => 'ev', 'ευ' => 'ev', 'εύ' => 'ev',
+			'ΜΠ' => 'b',  'Μπ' => 'b',  'μπ' => 'b',
+			'ΝΤ' => 'nt', 'Ντ' => 'nt', 'ντ' => 'nt',
+			'ΓΚ' => 'gk', 'Γκ' => 'gk', 'γκ' => 'gk',
+			'ΤΖ' => 'tz', 'Τζ' => 'tz', 'τζ' => 'tz',
+			'ΤΣ' => 'ts', 'Τσ' => 'ts', 'τσ' => 'ts',
+			// Greek Alphabet
+			'Α' => 'a', 'Ά' => 'a', 'α' => 'a', 'ά' => 'a',
+			'Β' => 'v', 'β' => 'v',
+			'Γ' => 'g', 'γ' => 'g',
+			'Δ' => 'd', 'δ' => 'd',
+			'Ε' => 'e', 'Έ' => 'e', 'ε' => 'e', 'έ' => 'e',
+			'Ζ' => 'z', 'ζ' => 'z',
+			'Η' => 'i', 'Ή' => 'i', 'η' => 'i', 'ή' => 'i',
+			'Θ' => 'th', 'θ' => 'th',
+			'Ι' => 'i', 'Ί' => 'i', 'Ϊ' => 'i', 'ι' => 'i', 'ί' => 'i', 'ϊ' => 'i', 'ΐ' => 'i',
+			'Κ' => 'k', 'κ' => 'k',
+			'Λ' => 'l', 'λ' => 'l',
+			'Μ' => 'm', 'μ' => 'm',
+			'Ν' => 'n', 'ν' => 'n',
+			'Ξ' => 'x', 'ξ' => 'x',
+			'Ο' => 'o', 'Ό' => 'o', 'ο' => 'o', 'ό' => 'o',
+			'Π' => 'p', 'π' => 'p',
+			'Ρ' => 'r', 'ρ' => 'r',
+			'Σ' => 's', 'σ' => 's', 'ς' => 's',
+			'Τ' => 't', 'τ' => 't',
+			'Υ' => 'y', 'Ύ' => 'y', 'Ϋ' => 'y', 'υ' => 'y', 'ύ' => 'y', 'ϋ' => 'y', 'ΰ' => 'y',
+			'Φ' => 'f', 'φ' => 'f',
+			'Χ' => 'ch', 'χ' => 'ch',
+			'Ψ' => 'ps', 'ψ' => 'ps',
+			'Ω' => 'o', 'Ώ' => 'o', 'ω' => 'o', 'ώ' => 'o',
+			// Common Latin Diacritics fallback
+			'ä' => 'a', 'ö' => 'o', 'ü' => 'u', 'Ä' => 'a', 'Ö' => 'o', 'Ü' => 'u', 'ß' => 'ss',
+			'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+			'à' => 'a', 'á' => 'a', 'â' => 'a', 'ç' => 'c',
+			'î' => 'i', 'ï' => 'i', 'ô' => 'o', 'ù' => 'u', 'û' => 'u',
+		);
+
+		$string = str_replace( array_keys( $greek_map ), array_values( $greek_map ), $string );
+
+		if ( function_exists( 'mb_strtolower' ) ) {
+			$string = mb_strtolower( $string, 'UTF-8' );
+		} else {
+			$string = strtolower( $string );
+		}
+
+		// Replace ampersand or plus with space
+		$string = str_replace( array( '&', '+' ), ' ', $string );
+
+		// Strip everything except lowercase Latin letters, numbers, and hyphens/underscores/spaces
+		$string = preg_replace( '/[^a-z0-9\s_-]/', '', $string );
+
+		// Replace whitespace and underscores with a single hyphen
+		$string = preg_replace( '/[\s_]+/', '-', $string );
+
+		// Collapse multiple hyphens
+		$string = preg_replace( '/-+/', '-', $string );
+
+		$slug = trim( $string, '-' );
+
+		// Bound slug length
+		if ( $max_length > 0 && strlen( $slug ) > $max_length ) {
+			$slug = substr( $slug, 0, $max_length );
+			$slug = rtrim( $slug, '-' );
+		}
+
+		return $slug;
 	}
 
 	/**

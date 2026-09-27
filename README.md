@@ -2,10 +2,14 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.3.4`
+Current version: `0.3.5`
 
 ## What this version includes
 
+- Strictly Latin slugs rule: all package URL slugs (permalinks) are guaranteed to be in lowercase Latin letters (`a-z0-9-`) with zero percent-encoded non-ASCII characters
+- Greek-to-Latin transliteration engine: robust `latinize_slug()` converts Greek titles into clean, SEO-optimized Latin slugs (Greeklish) handling diphthongs, accented vowels, and final sigmas
+- Core post hook enforcement: `wp_insert_post_data` automatically enforces Latin slugs for any package post created or updated via importer, REST API, or WP admin
+- AI Package Importer & Instructions: added `slug` support to AI instructions, template, and importer for custom Latin slugs while automatically generating them if omitted
 - Importer database insertion hardening: resolved `db_insert_error` caused by database column overflows on long percent-encoded non-ASCII/Greek slugs and unicode punctuation
 - Slug length bounding: automatically limits generated package slugs to 120 characters via `_truncate_post_slug()` to safely avoid MySQL `varchar(200)` limits when appending uniqueness suffixes
 - Unicode dash normalization: automatically sanitizes unicode dashes (en-dash `–`, em-dash `—`, minus) into standard hyphens in titles and slugs
