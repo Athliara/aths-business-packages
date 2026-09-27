@@ -1900,7 +1900,44 @@ class ATHSBP_Plugin {
 	}
 
 	/**
-	 * Sanitize table text entries for package storage.
+	 * Split a table string into multiple chunks if it contains more than the maximum allowed data rows.
+	 * Preserves the column header row on each chunk.
+	 *
+	 * @param string $table_str Raw table string.
+	 * @param int    $max_rows  Maximum number of data rows per table (default 20).
+	 * @return array<string> Array of table strings.
+	 */
+	public function split_table_if_oversized( $table_str, $max_rows = 20 ) {
+		$table_str = trim( (string) $table_str );
+		if ( '' === $table_str ) {
+			return array();
+		}
+
+		$lines = array_values( array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', $table_str ) ) ) );
+		if ( count( $lines ) <= 1 ) {
+			return array( $table_str );
+		}
+
+		// First line is header
+		$header     = $lines[0];
+		$data_lines = array_slice( $lines, 1 );
+
+		if ( count( $data_lines ) <= $max_rows ) {
+			return array( $table_str );
+		}
+
+		$chunks = array_chunk( $data_lines, $max_rows );
+		$tables = array();
+
+		foreach ( $chunks as $chunk ) {
+			$tables[] = implode( "\n", array_merge( array( $header ), $chunk ) );
+		}
+
+		return $tables;
+	}
+
+	/**
+	 * Sanitize table text entries for package storage and auto-split tables exceeding 20 rows.
 	 *
 	 * @param array $tables Array of raw table strings.
 	 * @return array Cleaned table strings.
@@ -1918,7 +1955,11 @@ class ATHSBP_Plugin {
 				continue;
 			}
 
-			$clean[] = $table;
+			// Automatically split any table exceeding 20 data rows into multiple tables
+			$chunks = $this->split_table_if_oversized( $table, 20 );
+			foreach ( $chunks as $chunk_table ) {
+				$clean[] = $chunk_table;
+			}
 		}
 
 		return $clean;
@@ -2254,7 +2295,7 @@ class ATHSBP_Plugin {
 	 * @param string $post_status Target post status ('publish' or 'draft').
 	 * @return int|WP_Error Post ID or WP_Error.
 	 */
-	public function import_single_package( array $item, $post_status = 'publish' ) {
+	public function import_single_package( array $item, $post_status = 'draft' ) {
 		$raw_title = isset( $item['title'] ) ? trim( (string) $item['title'] ) : '';
 		if ( '' === $raw_title ) {
 			return new WP_Error( 'missing_title', __( 'Each package must have a valid title.', 'aths-business-packages' ) );
@@ -2307,7 +2348,12 @@ class ATHSBP_Plugin {
 
 		$item['meta_description'] = $meta_description;
 
-		$status = in_array( $post_status, array( 'publish', 'draft' ), true ) ? $post_status : 'publish';
+		// Ensure any provided tables are auto-split if exceeding 20 data rows
+		if ( ! empty( $item['includes_tables'] ) && is_array( $item['includes_tables'] ) ) {
+			$item['includes_tables'] = $this->sanitize_table_list( $item['includes_tables'] );
+		}
+
+		$status = in_array( $post_status, array( 'publish', 'draft' ), true ) ? $post_status : 'draft';
 
 		// Generate a safe, bounded slug (max 120 chars) strictly in Latin characters (Greeklish transliteration)
 		if ( ! empty( $item['slug'] ) ) {
@@ -3006,7 +3052,7 @@ class ATHSBP_Plugin {
 	 * @param string       $post_status 'publish' or 'draft'.
 	 * @return array Results summary with 'success', 'count', 'created', 'errors'.
 	 */
-	public function import_packages_from_payload( $payload, $post_status = 'publish' ) {
+	public function import_packages_from_payload( $payload, $post_status = 'draft' ) {
 		$items = is_array( $payload ) ? $payload : $this->parse_json_payload( $payload );
 
 		if ( is_wp_error( $items ) ) {

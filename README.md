@@ -2,10 +2,14 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.3.5`
+Current version: `0.3.6`
 
 ## What this version includes
 
+- Automatic table splitting (>20 rows): tables with more than 20 rows are automatically divided into multiple tables in `includes_tables`, each retaining the column headers
+- Fixed post update/save blocking on large tables: removed restrictive `max="20"` browser validation constraint on the custom table builder input that prevented updating packages or switching status to draft
+- Default importer status to Draft: AI package importer now defaults to "Save as Draft" for safe pre-publishing review
+- Updated AI instructions: added rule to split departure and pricing tables into chunks of up to 20 rows
 - Strictly Latin slugs rule: all package URL slugs (permalinks) are guaranteed to be in lowercase Latin letters (`a-z0-9-`) with zero percent-encoded non-ASCII characters
 - Greek-to-Latin transliteration engine: robust `latinize_slug()` converts Greek titles into clean, SEO-optimized Latin slugs (Greeklish) handling diphthongs, accented vowels, and final sigmas
 - Core post hook enforcement: `wp_insert_post_data` automatically enforces Latin slugs for any package post created or updated via importer, REST API, or WP admin

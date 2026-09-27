@@ -41,8 +41,9 @@ You are an expert AI travel data assistant. Your task is to extract travel packa
      - Standard paragraphs (`<p>...</p>`), bold (`<strong>...</strong>`), italics (`<em>...</em>`), subheadings (`<h3>...</h3>`), and lists (`<ul><li>...</li></ul>`).
      - Do NOT use raw unescaped newlines instead of HTML tags in rich-text fields.
 
-8. **Flight / Price Tables**:
+8. **Flight / Price Tables (MAX 20 DATA ROWS PER TABLE - MANDATORY)**:
    - In tables (`includes_tables`), use pipe characters (`|`) to separate columns and newlines (`\n`) to separate rows. The first row must be the column headers.
+   - **Maximum 20 data rows per table**: If a package has more than 20 departure dates or pricing rows, you **MUST split them across multiple tables** in the `includes_tables` array (each table with at most 20 data rows), repeating the exact same column header row at the top of each table (e.g. Table 1 for early departures, Table 2 for later departures).
 
 ---
 
@@ -73,7 +74,7 @@ You are an expert AI travel data assistant. Your task is to extract travel packa
 | `excludes_content` | `string` | **HTML list.** Items NOT included in the package formatted strictly as `<ul><li>...</li></ul>`. |
 | `general_info_title` | `string` | Title for general info (default: `"Γενικές Πληροφορίες"`). |
 | `general_info_content` | `string` | **HTML.** Flight schedules, luggage rules, hotel notes, entry requirements formatted with `<p>`, `<ul>`, `<li>`. |
-| `includes_tables` | `array of strings` | Pipe-separated flight/price tables. Format: `Column 1|Column 2|Column 3\nValue 1|Value 2|Value 3`. |
+| `includes_tables` | `array of strings` | Pipe-separated flight/price tables (max 20 data rows per table; split into multiple tables if >20 rows). Format: `Column 1|Column 2|Column 3\nValue 1|Value 2|Value 3`. |
 | `destinations` | `array of strings` | **Existing regional destination term only.** See Section 3. |
 | `countries` | `array of strings` | **Standard country name only.** See Section 3. |
 | `holidays` | `array of strings` | **Existing holiday term only.** See Section 3. Leave `[]` if not applicable. |

@@ -668,8 +668,8 @@ class ATHSBP_Admin {
 								<th scope="row"><label for="abp-import-status"><?php esc_html_e( 'Package Status', 'aths-business-packages' ); ?></label></th>
 								<td>
 									<select id="abp-import-status" name="athsbp_import_status">
+										<option value="draft" selected="selected"><?php esc_html_e( 'Save as Draft (Default)', 'aths-business-packages' ); ?></option>
 										<option value="publish"><?php esc_html_e( 'Publish Immediately', 'aths-business-packages' ); ?></option>
-										<option value="draft"><?php esc_html_e( 'Save as Draft', 'aths-business-packages' ); ?></option>
 									</select>
 									<p class="description"><?php esc_html_e( 'Choose whether to immediately publish imported packages or keep them as drafts for review.', 'aths-business-packages' ); ?></p>
 								</td>
@@ -1223,11 +1223,11 @@ class ATHSBP_Admin {
 				<div class="abp-table-size-controls">
 					<div>
 						<span><?php echo esc_html( $labels['data_rows'] ); ?></span>
-						<input type="number" min="0" max="20" value="<?php echo esc_attr( $table_shape['rows'] ); ?>" class="small-text abp-table-rows">
+						<input type="number" min="0" max="100" value="<?php echo esc_attr( $table_shape['rows'] ); ?>" class="small-text abp-table-rows">
 					</div>
 					<div>
 						<span><?php echo esc_html( $labels['data_columns'] ); ?></span>
-						<input type="number" min="0" max="8" value="<?php echo esc_attr( $table_shape['cols'] ); ?>" class="small-text abp-table-cols">
+						<input type="number" min="0" max="20" value="<?php echo esc_attr( $table_shape['cols'] ); ?>" class="small-text abp-table-cols">
 					</div>
 					<button type="button" class="button button-secondary abp-build-table"><?php echo esc_html( $labels['build_table'] ); ?></button>
 					<button type="button" class="button-link-delete abp-remove-table"><?php echo esc_html( $labels['remove_table'] ); ?></button>
@@ -1393,7 +1393,7 @@ class ATHSBP_Admin {
 
 		$post_status = ! empty( $_POST['athsbp_import_status'] ) && in_array( $_POST['athsbp_import_status'], array( 'publish', 'draft' ), true )
 			? sanitize_key( $_POST['athsbp_import_status'] )
-			: 'publish';
+			: 'draft';
 
 		$result = $this->plugin->import_packages_from_payload( $raw_json, $post_status );
 

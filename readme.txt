@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.3.5
+Stable tag: 0.3.6
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -68,6 +68,13 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+= 0.3.6 =
+
+* Automatic Table Splitting (>20 Rows): Implemented automatic table splitting for package pricing and departure tables. Any table exceeding 20 data rows is automatically divided into multiple consecutive tables within `includes_tables`, each preserving the original column headers.
+* Fix Update/Save Blocking on Large Tables: Resolved issue where browser HTML5 validation on the table builder's row input (`max="20"`) prevented form submission ("Please select a value that is no more than 20") when clicking "Update" or switching post status. Expanded builder input limits to prevent form blocking.
+* Default Importer Status to Draft: Changed the AI Package Importer default post status to "Save as Draft" instead of immediate publishing, allowing full review of imported packages before going live.
+* Updated AI Package Instructions: Added rule requiring AI models to split departure/pricing tables into chunks of up to 20 rows each when generating package JSON.
 
 = 0.3.5 =
 
