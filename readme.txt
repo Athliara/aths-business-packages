@@ -180,3 +180,8 @@ This plugin is distributed under the GNU General Public License v3 or later.
 
 * Normalized plugin file line endings for Plugin Check.
 * Documented one-time legacy migration database operations with precise PHPCS ignores while preserving existing package migration safeguards.
+
+== Upgrade Notice ==
+
+= 0.3.6 =
+Auto-splits tables exceeding 20 rows, prevents table builder form validation from blocking post updates, defaults AI importer status to draft, and enforces clean Latin permalinks.
