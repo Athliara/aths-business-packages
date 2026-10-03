@@ -890,6 +890,32 @@ class ATHSBP_Plugin {
 
 		$meta['includes_pdf_id'] = absint( $meta['includes_pdf_id'] );
 
+		// Fallbacks from Zoulakis Travel Theme SEO engine and translation post meta
+		if ( empty( $meta['meta_description'] ) ) {
+			$zt_desc = get_post_meta( $post_id, '_zt_seo_description', true );
+			if ( ! empty( $zt_desc ) && is_string( $zt_desc ) ) {
+				$meta['meta_description'] = $zt_desc;
+			}
+		}
+		if ( empty( $meta['meta_description_en'] ) ) {
+			$zt_en_desc = get_post_meta( $post_id, '_zt_en_seo_description', true );
+			if ( ! empty( $zt_en_desc ) && is_string( $zt_en_desc ) ) {
+				$meta['meta_description_en'] = $zt_en_desc;
+			}
+		}
+		if ( empty( $meta['title_en'] ) ) {
+			$zt_en_title = get_post_meta( $post_id, '_zt_en_title', true );
+			if ( ! empty( $zt_en_title ) && is_string( $zt_en_title ) ) {
+				$meta['title_en'] = $zt_en_title;
+			}
+		}
+		if ( empty( $meta['description_content_en'] ) ) {
+			$zt_en_meta = get_post_meta( $post_id, '_zt_en_athsbp_meta', true );
+			if ( is_array( $zt_en_meta ) && ! empty( $zt_en_meta['description_content'] ) ) {
+				$meta['description_content_en'] = $zt_en_meta['description_content'];
+			}
+		}
+
 		// Dynamic multi-language resolution on frontend
 		$current_lang = $this->get_current_language();
 		if ( 'en' === $current_lang && ! is_admin() ) {
@@ -945,6 +971,11 @@ class ATHSBP_Plugin {
 		$meta = get_post_meta( $post_id, self::META_KEY, true );
 		if ( is_array( $meta ) && ! empty( $meta['title_en'] ) && '' !== trim( (string) $meta['title_en'] ) ) {
 			return $meta['title_en'];
+		}
+
+		$zt_en_title = get_post_meta( $post_id, '_zt_en_title', true );
+		if ( ! empty( $zt_en_title ) && '' !== trim( (string) $zt_en_title ) ) {
+			return $zt_en_title;
 		}
 
 		return $title;
@@ -2093,6 +2124,53 @@ class ATHSBP_Plugin {
 			update_post_meta( $post_id, '_yoast_wpseo_metadesc', $meta['meta_description'] );
 			update_post_meta( $post_id, '_aioseo_description', $meta['meta_description'] );
 			update_post_meta( $post_id, '_seopress_titles_desc', $meta['meta_description'] );
+			update_post_meta( $post_id, '_zt_seo_description', $meta['meta_description'] );
+		}
+
+		if ( '' !== $meta['meta_description_en'] ) {
+			update_post_meta( $post_id, '_zt_en_seo_description', $meta['meta_description_en'] );
+		}
+
+		if ( '' !== $meta['title_en'] ) {
+			update_post_meta( $post_id, '_zt_en_title', $meta['title_en'] );
+		}
+
+		if ( '' !== $meta['description_content_en'] ) {
+			$existing_zt_en = get_post_meta( $post_id, '_zt_en_athsbp_meta', true );
+			if ( ! is_array( $existing_zt_en ) ) {
+				$existing_zt_en = array();
+			}
+			$existing_zt_en['description_content'] = $meta['description_content_en'];
+			update_post_meta( $post_id, '_zt_en_athsbp_meta', $existing_zt_en );
+		}
+
+		// Synchronize SEO titles for Zoulakis Travel theme and Rank Math
+		if ( ! empty( $raw_meta['seo_title'] ) ) {
+			$custom_seo_title = sanitize_text_field( $raw_meta['seo_title'] );
+			update_post_meta( $post_id, '_zt_seo_title', $custom_seo_title );
+			update_post_meta( $post_id, 'rank_math_title', $custom_seo_title );
+		} elseif ( ! get_post_meta( $post_id, '_zt_seo_title', true ) ) {
+			$pkg_title = get_the_title( $post_id );
+			if ( ! empty( $pkg_title ) ) {
+				update_post_meta( $post_id, '_zt_seo_title', $pkg_title . ' | Zoulakis Travel' );
+			}
+		}
+
+		if ( ! empty( $raw_meta['seo_title_en'] ) ) {
+			update_post_meta( $post_id, '_zt_en_seo_title', sanitize_text_field( $raw_meta['seo_title_en'] ) );
+		} elseif ( '' !== $meta['title_en'] && ! get_post_meta( $post_id, '_zt_en_seo_title', true ) ) {
+			update_post_meta( $post_id, '_zt_en_seo_title', $meta['title_en'] . ' | Zoulakis Travel' );
+		}
+
+		// Synchronize focus keyphrases for Zoulakis Travel theme, Yoast, and Rank Math
+		if ( ! empty( $raw_meta['focus_keyphrase'] ) ) {
+			$focus_kp = sanitize_text_field( $raw_meta['focus_keyphrase'] );
+			update_post_meta( $post_id, '_zt_seo_focus_keyphrase', $focus_kp );
+			update_post_meta( $post_id, '_yoast_wpseo_focuskw', $focus_kp );
+			update_post_meta( $post_id, 'rank_math_focus_keyword', $focus_kp );
+		}
+		if ( ! empty( $raw_meta['focus_keyphrase_en'] ) ) {
+			update_post_meta( $post_id, '_zt_en_seo_focus_keyphrase', sanitize_text_field( $raw_meta['focus_keyphrase_en'] ) );
 		}
 
 		if ( '' !== $meta['expiration_date'] ) {
@@ -2348,6 +2426,41 @@ class ATHSBP_Plugin {
 
 		$item['meta_description'] = $meta_description;
 
+		// SEO Meta Title & Focus Keyphrase preparation for Zoulakis Travel theme and SEO plugins
+		if ( empty( $item['seo_title'] ) ) {
+			if ( ! empty( $item['_zt_seo_title'] ) ) {
+				$item['seo_title'] = sanitize_text_field( $item['_zt_seo_title'] );
+			} else {
+				$item['seo_title'] = $title . ' | Zoulakis Travel';
+			}
+		}
+
+		if ( ! empty( $item['title_en'] ) && empty( $item['seo_title_en'] ) ) {
+			if ( ! empty( $item['_zt_en_seo_title'] ) ) {
+				$item['seo_title_en'] = sanitize_text_field( $item['_zt_en_seo_title'] );
+			} else {
+				$item['seo_title_en'] = $item['title_en'] . ' | Zoulakis Travel';
+			}
+		}
+
+		if ( empty( $item['focus_keyphrase'] ) ) {
+			if ( ! empty( $item['focus_keyword'] ) ) {
+				$item['focus_keyphrase'] = sanitize_text_field( $item['focus_keyword'] );
+			} elseif ( ! empty( $item['_zt_seo_focus_keyphrase'] ) ) {
+				$item['focus_keyphrase'] = sanitize_text_field( $item['_zt_seo_focus_keyphrase'] );
+			} elseif ( ! empty( $item['destination'] ) ) {
+				$item['focus_keyphrase'] = sanitize_text_field( $item['destination'] );
+			} elseif ( ! empty( $item['destinations'] ) && is_string( $item['destinations'] ) ) {
+				$item['focus_keyphrase'] = sanitize_text_field( $item['destinations'] );
+			} elseif ( ! empty( $item['destinations'] ) && is_array( $item['destinations'] ) && ! empty( $item['destinations'][0] ) ) {
+				$item['focus_keyphrase'] = sanitize_text_field( $item['destinations'][0] );
+			}
+		}
+
+		if ( ! empty( $item['_zt_en_seo_focus_keyphrase'] ) && empty( $item['focus_keyphrase_en'] ) ) {
+			$item['focus_keyphrase_en'] = sanitize_text_field( $item['_zt_en_seo_focus_keyphrase'] );
+		}
+
 		// Ensure any provided tables are auto-split if exceeding 20 data rows
 		if ( ! empty( $item['includes_tables'] ) && is_array( $item['includes_tables'] ) ) {
 			$item['includes_tables'] = $this->sanitize_table_list( $item['includes_tables'] );
@@ -2381,17 +2494,27 @@ class ATHSBP_Plugin {
 			'post_status'    => $status,
 			'post_author'    => $author_id,
 			'post_content'   => ! empty( $item['description_content'] ) ? wp_kses_post( $item['description_content'] ) : '',
-			'post_excerpt'   => $meta_description,
+			'post_excerpt'   => '', // Avoid database validation exceptions on post_excerpt column byte/length limits
 			'comment_status' => 'closed',
 			'ping_status'    => 'closed',
 		);
 
 		$post_id = wp_insert_post( $post_arr, true );
 
+		// Fallback retry if initial insert failed (e.g. database column issue or strict excerpt validation)
+		if ( is_wp_error( $post_id ) ) {
+			$post_arr['post_excerpt'] = '';
+			$retry_id                 = wp_insert_post( $post_arr, true );
+			if ( ! is_wp_error( $retry_id ) ) {
+				$post_id = $retry_id;
+			}
+		}
+
 		// Fallback retry as draft if publish status encounters permission or transition restrictions
 		if ( is_wp_error( $post_id ) && 'publish' === $status ) {
-			$post_arr['post_status'] = 'draft';
-			$retry_id                = wp_insert_post( $post_arr, true );
+			$post_arr['post_status']  = 'draft';
+			$post_arr['post_excerpt'] = '';
+			$retry_id                 = wp_insert_post( $post_arr, true );
 			if ( ! is_wp_error( $retry_id ) ) {
 				$post_id = $retry_id;
 			}
@@ -2401,14 +2524,25 @@ class ATHSBP_Plugin {
 			return $post_id;
 		}
 
-		// Sync SEO titles and descriptions for common SEO plugins
+		// Sync SEO titles and descriptions for common SEO plugins and Zoulakis Travel theme
 		update_post_meta( $post_id, 'rank_math_title', $title );
 		update_post_meta( $post_id, '_yoast_wpseo_title', '%%title%%' );
+		update_post_meta( $post_id, '_zt_seo_title', ! empty( $item['seo_title'] ) ? $item['seo_title'] : $title . ' | Zoulakis Travel' );
 		if ( '' !== $meta_description ) {
 			update_post_meta( $post_id, 'rank_math_description', $meta_description );
 			update_post_meta( $post_id, '_yoast_wpseo_metadesc', $meta_description );
 			update_post_meta( $post_id, '_aioseo_description', $meta_description );
 			update_post_meta( $post_id, '_seopress_titles_desc', $meta_description );
+
+			// Safely attempt to update post_excerpt with a bounded string, without failing import if DB rejects it
+			$safe_excerpt = function_exists( 'mb_substr' ) ? mb_substr( $meta_description, 0, 100, 'UTF-8' ) : substr( $meta_description, 0, 100 );
+			wp_update_post(
+				array(
+					'ID'           => $post_id,
+					'post_excerpt' => $safe_excerpt,
+				),
+				false
+			);
 		}
 
 		$this->save_package_meta_fields( $post_id, $item );
@@ -2495,6 +2629,15 @@ class ATHSBP_Plugin {
 			$latin_slug      = $this->latinize_slug( $raw_to_latinize, 120 );
 			if ( '' !== $latin_slug ) {
 				$data['post_name'] = $latin_slug;
+			}
+		}
+
+		// Ensure post_excerpt is length-bounded to avoid database exceptions on custom/strict varchar schemas
+		if ( isset( $data['post_excerpt'] ) && '' !== $data['post_excerpt'] ) {
+			if ( function_exists( 'mb_strlen' ) && mb_strlen( $data['post_excerpt'], 'UTF-8' ) > 120 ) {
+				$data['post_excerpt'] = mb_substr( $data['post_excerpt'], 0, 117, 'UTF-8' ) . '...';
+			} elseif ( strlen( $data['post_excerpt'] ) > 120 ) {
+				$data['post_excerpt'] = substr( $data['post_excerpt'], 0, 117 ) . '...';
 			}
 		}
 

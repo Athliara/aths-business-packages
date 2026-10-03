@@ -2,10 +2,19 @@
 
 Custom WordPress plugin built for package-based businesses, starting with travel agencies.
 
-Current version: `0.3.6`
+Current version: `0.4.0`
 
 ## What this version includes
 
+- Native Zoulakis Travel Theme SEO Engine Integration: Added deep integration with the built-in SEO and GEO engine of the Zoulakis Travel theme (v1.4.0) alongside existing support for Yoast SEO, Rank Math, All in One SEO, and SEOPress
+- Bilingual SEO Meta Synchronization: Automatically synchronizes Greek and English SEO titles (`_zt_seo_title`, `_zt_en_seo_title`), meta descriptions (`_zt_seo_description`, `_zt_en_seo_description`), and focus keyphrases (`_zt_seo_focus_keyphrase`, `_zt_en_seo_focus_keyphrase`) across package post saves and AI JSON package imports
+- English Package Translations Integration: Automatically synchronizes English package titles (`_zt_en_title`) and translated itinerary content (`_zt_en_athsbp_meta`) with theme single package templates and bilingual page views
+- Frontend Meta Deduplication: Updated package meta output in `wp_head` to detect the theme's active SEO engine (`zt_output_seo_and_geo_meta` / `zt_apply_custom_seo_meta`), preventing duplicate `<meta name="description">` tags while letting the theme provide complete OpenGraph, Twitter, and Geo meta tags
+- Bi-Directional Editor & Meta Fallbacks: Package editor and `get_package_meta()` gracefully retrieve existing theme SEO titles, descriptions, and translations, ensuring complete interoperability with zero database conflicts
+- Expanded AI JSON Import Schema & Template: Added support for optional SEO titles (`seo_title`, `seo_title_en`), focus keyphrases (`focus_keyphrase`, `focus_keyphrase_en`), and English descriptions (`meta_description_en`) in the AI import template and reference instructions
+- Fixed admin notice text readability: resolved issue where admin notices (error, warning, success) displayed white illegible text when rendered inside or above the settings hero banner; anchored notices properly via `wp-header-end` and added high-contrast styling with dark text, clean tinted backgrounds, and colored indicator borders
+- Fixed AI package importer database error on `post_excerpt`: resolved `db_insert_error` ("Processing of the following field failed: post_excerpt") caused by inserting multi-byte Greek meta descriptions directly into `post_excerpt` on databases with strict column length or character restrictions
+- Resilient post creation and non-blocking excerpt sync: package creation avoids `post_excerpt` constraints on insert, incorporates automated fallback retries for database exceptions, safely bounds excerpt lengths in `wp_insert_post_data`, and non-blockingly synchronizes excerpts while preserving full SEO description fidelity across all major SEO plugins and post meta
 - Automatic table splitting (>20 rows): tables with more than 20 rows are automatically divided into multiple tables in `includes_tables`, each retaining the column headers
 - Fixed post update/save blocking on large tables: removed restrictive `max="20"` browser validation constraint on the custom table builder input that prevented updating packages or switching status to draft
 - Default importer status to Draft: AI package importer now defaults to "Save as Draft" for safe pre-publishing review

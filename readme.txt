@@ -4,7 +4,7 @@ Tags: travel, packages, shortcode, filters, business listings
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.3.6
+Stable tag: 0.4.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -28,6 +28,7 @@ Main features:
 * Native multilingual package translation support with graceful fallback for monolingual sites.
 * One-click AI / automated package translation directly in the package editor.
 * Extensible language synchronization filter (`athsbp_current_language`) compatible with any theme, Polylang, and WPML.
+* Native integration with Zoulakis Travel theme built-in SEO engine (v1.4.0) alongside Yoast, Rank Math, AIOSEO, and SEOPress.
 * Site currency selection with symbol-based display.
 * Shortcode-based archive output for theme builders, Elementor, BeTheme, and standard pages.
 * Custom single-package presentation with gallery themes, standalone stat tiles, description sections, manual HTML table content, multiple builder tables, optional PDF display, and similar package suggestions.
@@ -68,6 +69,21 @@ No. The plugin does not send package data to external services. Uploaded images 
 This plugin is distributed under the GNU General Public License v3 or later.
 
 == Changelog ==
+
+= 0.4.0 =
+
+* Zoulakis Travel Theme SEO Engine Integration: Added deep native support for the built-in SEO engine of the Zoulakis Travel theme (v1.4.0) alongside existing support for Yoast SEO, Rank Math, All in One SEO, and SEOPress.
+* Bilingual SEO Meta Synchronization: Seamlessly synchronizes custom SEO titles (`_zt_seo_title`, `_zt_en_seo_title`), meta descriptions (`_zt_seo_description`, `_zt_en_seo_description`), and focus keyphrases (`_zt_seo_focus_keyphrase`, `_zt_en_seo_focus_keyphrase`) across package post saves and AI JSON package imports.
+* Multilingual Package Meta Integration: Automatically synchronizes English package titles (`_zt_en_title`) and itinerary content (`_zt_en_athsbp_meta`) with theme templates and single package views.
+* Frontend Meta Deduplication: Updated `output_package_meta_tags()` to detect the active Zoulakis Travel theme SEO engine (`zt_output_seo_and_geo_meta` / `zt_apply_custom_seo_meta`), preventing redundant `<meta name="description">` tags when the theme renders full OpenGraph, Twitter, and Geo meta tags.
+* Bi-Directional Admin Meta Fallbacks: Package editor and `get_package_meta()` gracefully retrieve existing theme SEO titles, descriptions, and translations, ensuring complete interoperability with zero database conflicts.
+* Enhanced AI Importer & Schema: Added support for optional SEO title (`seo_title`, `seo_title_en`) and focus keyphrase (`focus_keyphrase`, `focus_keyphrase_en`) fields in the AI import schema and reference instructions.
+
+= 0.3.7 =
+
+* Fix Admin Notice Text Readability: Resolved styling issue where admin notices (error, warning, and success messages) rendered with illegible white text when displayed inside or above the settings hero banner. Anchored notices properly via `wp-header-end` and added dedicated high-contrast styling with explicit dark typography, clean tinted backgrounds, and colored indicator borders.
+* Fix AI Importer Database Error on Post Excerpt: Fixed `db_insert_error` ("Processing of the following field failed: post_excerpt. The provided value may be too large or contains invalid data") caused by passing multi-byte Greek meta descriptions directly into `post_excerpt` during initial post insertion on databases with strict column length or character restrictions.
+* Resilient Post Insertion & Non-Blocking Excerpt Sync: Initial package creation now safely avoids `post_excerpt` column constraints, includes automated fallback retries for database exceptions, safely bounds excerpt length in `wp_insert_post_data`, and non-blockingly synchronizes excerpts while maintaining full SEO description fidelity across all major SEO plugins and post meta.
 
 = 0.3.6 =
 
@@ -182,6 +198,12 @@ This plugin is distributed under the GNU General Public License v3 or later.
 * Documented one-time legacy migration database operations with precise PHPCS ignores while preserving existing package migration safeguards.
 
 == Upgrade Notice ==
+
+= 0.4.0 =
+Adds seamless bilingual SEO engine integration with Zoulakis Travel theme (v1.4.0), synchronizing SEO titles, descriptions, focus keyphrases, and English package translations upon save and AI JSON import.
+
+= 0.3.7 =
+Fixes unreadable admin error notice styling with high-contrast text and resolves AI package importer post_excerpt database errors on multibyte Greek package imports.
 
 = 0.3.6 =
 Auto-splits tables exceeding 20 rows, prevents table builder form validation from blocking post updates, defaults AI importer status to draft, and enforces clean Latin permalinks.

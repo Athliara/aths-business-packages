@@ -64,8 +64,13 @@ You are an expert AI travel data assistant. Your task is to extract travel packa
 | `nights` | `string` | **Primary duration field.** Number of nights (e.g., `"8 διανυκτερεύσεις"` or `"7 nights"`). |
 | `duration` | `string` | **Automatic.** Duration in days (e.g., `"9 ημέρες"`). Always equals nights + 1. |
 | `expiration_date` | `string` | Date string in `YYYY-MM-DD` format (e.g., `"2026-10-31"`). Package will automatically hide after this date. Leave empty if no expiration. |
+| `seo_title` | `string` | **Optional. Max 60 chars.** Custom SEO Meta Title for search engines. Defaults to `"{title} | Zoulakis Travel"`. |
 | `meta_description` | `string` | **SEO Meta Description (Max 160 chars).** Concise search engine summary based on package language (e.g. Greek or English). Leave empty (`""`) to auto-derive from subtitle. |
-| `meta_description_en` | `string` | **Optional.** SEO Meta Description in English if multilingual. |
+| `focus_keyphrase` | `string` | **Optional.** Primary SEO focus keyphrase (e.g. `"Μαρόκο πακέτο διακοπών"`). Auto-derived from destination if omitted. |
+| `title_en` | `string` | **Optional.** English package title (e.g. `"Morocco 9 Days"`). |
+| `seo_title_en` | `string` | **Optional.** English SEO Meta Title (e.g. `"Morocco 9 Days | Zoulakis Travel"`). |
+| `meta_description_en` | `string` | **Optional.** SEO Meta Description in English if multilingual (max 160 chars). |
+| `focus_keyphrase_en` | `string` | **Optional.** English SEO focus keyphrase (e.g. `"Morocco holiday package"`). |
 | `description_title` | `string` | Title of the description section (default: `"Προορισμός / Περιγραφή"`). |
 | `description_content` | `string` | **HTML.** The full day-by-day itinerary or package description. Use `<p>`, `<strong>`, `<h3>`, etc. |
 | `includes_title` | `string` | Title for inclusions (default: `"Τι περιλαμβάνεται"`). |

@@ -26,8 +26,8 @@ class ATHSBP_Frontend {
 			return;
 		}
 
-		// Avoid duplicate meta description if standard SEO plugins are active
-		if ( defined( 'WPSEO_VERSION' ) || defined( 'RANK_MATH_VERSION' ) || defined( 'AIOSEO_VERSION' ) || defined( 'SEOPRESS_VERSION' ) ) {
+		// Avoid duplicate meta description if standard SEO plugins or Zoulakis Travel theme SEO engine are active
+		if ( defined( 'WPSEO_VERSION' ) || defined( 'RANK_MATH_VERSION' ) || defined( 'AIOSEO_VERSION' ) || defined( 'SEOPRESS_VERSION' ) || function_exists( 'zt_output_seo_and_geo_meta' ) || function_exists( 'zt_apply_custom_seo_meta' ) ) {
 			return;
 		}
 

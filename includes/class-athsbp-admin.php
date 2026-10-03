@@ -344,16 +344,10 @@ class ATHSBP_Admin {
 		}
 		?>
 		<div class="wrap abp-settings athsbp-settings">
-			<?php if ( ! empty( $import_notice['message'] ) ) : ?>
-				<div class="notice notice-<?php echo esc_attr( $import_notice['type'] ); ?> is-dismissible athsbp-admin-notice">
-					<p><?php echo wp_kses_post( $import_notice['message'] ); ?></p>
-				</div>
-			<?php endif; ?>
-
 			<div class="abp-settings-hero athsbp-settings-hero">
 				<div class="abp-settings-hero-copy athsbp-settings-hero-copy">
 					<span class="abp-settings-kicker athsbp-settings-kicker"><?php esc_html_e( 'Travel Package Builder', 'aths-business-packages' ); ?></span>
-					<h1><?php esc_html_e( 'Ath\'s Business Packages', 'aths-business-packages' ); ?></h1>
+					<h2><?php esc_html_e( 'Ath\'s Business Packages', 'aths-business-packages' ); ?></h2>
 					<p><?php esc_html_e( 'A more polished package-management experience for travel agencies today, with room to adapt the wording for other business types later.', 'aths-business-packages' ); ?></p>
 					<div class="abp-hero-pills">
 						<span><?php esc_html_e( 'Structured editor', 'aths-business-packages' ); ?></span>
@@ -368,6 +362,15 @@ class ATHSBP_Admin {
 					<p><?php echo esc_html( $current_setup_text ); ?></p>
 				</div>
 			</div>
+
+			<h1 class="wp-heading-inline screen-reader-text"><?php esc_html_e( 'Ath\'s Business Packages', 'aths-business-packages' ); ?></h1>
+			<hr class="wp-header-end">
+
+			<?php if ( ! empty( $import_notice['message'] ) ) : ?>
+				<div class="notice notice-<?php echo esc_attr( $import_notice['type'] ); ?> is-dismissible athsbp-admin-notice">
+					<p><?php echo wp_kses_post( $import_notice['message'] ); ?></p>
+				</div>
+			<?php endif; ?>
 
 			<nav class="abp-settings-tabs athsbp-settings-tabs" aria-label="<?php esc_attr_e( 'Settings sections', 'aths-business-packages' ); ?>">
 				<button type="button" class="abp-settings-tab athsbp-settings-tab <?php echo 'general' === $active_tab ? 'is-active' : ''; ?>" data-athsbp-settings-tab="general"><?php esc_html_e( 'General Branding', 'aths-business-packages' ); ?></button>
